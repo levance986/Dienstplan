@@ -1,0 +1,2162 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#14532d">
+<title>Dienstplan Klinik v8.4</title>
+<style>
+:root{
+  --g:#166534;--g2:#dcfce7;--g3:#14532d;--r:#991b1b;--r2:#fee2e2;--b:#1d4ed8;--b2:#dbeafe;
+  --a:#92400e;--a2:#fef3c7;--p:#6d28d9;--p2:#ede9fe;--bg:#f8fafc;--card:#fff;--ink:#111827;--mut:#6b7280;--line:#e5e7eb;
+  --safe:env(safe-area-inset-bottom,0px)
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+.hidden{display:none!important}
+.top{position:sticky;top:0;z-index:20;background:linear-gradient(135deg,var(--g3),var(--g));color:white;padding:14px 16px;box-shadow:0 2px 10px #0002}
+.top h1{font-size:18px}.top small{opacity:.8}
+.nav{position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid var(--line);display:flex;height:calc(62px + var(--safe));padding-bottom:var(--safe);z-index:30}
+.nav button{flex:1;border:0;background:white;color:#94a3b8;font-size:11px;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.nav button.active{color:var(--g)}
+main{padding:14px 14px calc(82px + var(--safe))}
+.screen{display:none}.screen.active{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px #0000000f}
+h2{font-size:20px;margin-bottom:12px}.label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);font-weight:800;margin-bottom:8px}
+input,select,textarea{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:11px;background:white;font-size:15px}
+textarea{min-height:70px}
+select[multiple]{min-height:96px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.btn{border:0;border-radius:12px;padding:12px 14px;font-weight:800;font-size:14px;cursor:pointer}
+.green{background:var(--g);color:white}.outline{background:white;color:var(--g);border:1.5px solid var(--g)}.gray{background:#f1f5f9;color:var(--ink)}.red{background:var(--r);color:white}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.between{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.badge{display:inline-block;border-radius:7px;padding:3px 7px;font-size:11px;font-weight:800;margin:1px}
+.f-kim1{background:#e0f2fe;color:#075985}.f-pulmo{background:#dcfce7;color:#14532d}.f-nephro{background:#ede9fe;color:#5b21b6}.f-onko{background:#fef3c7;color:#78350f}.f-gastro{background:#ffedd5;color:#9a3412}.f-zna{background:#fee2e2;color:#991b1b}
+.d-int{background:#fee2e2;color:#7f1d1d}.d-zna1{background:#dbeafe;color:#1e3a8a}.d-zna2{background:#dcfce7;color:#14532d}.d-vis{background:#ede9fe;color:#5b21b6}
+.alert{border-left:4px solid;border-radius:12px;padding:11px 13px;margin-bottom:12px;line-height:1.45;font-size:13px}
+.ok{background:var(--g2);border-color:var(--g);color:#14532d}.warn{background:var(--a2);border-color:var(--a);color:#78350f}.bad{background:var(--r2);border-color:var(--r);color:#7f1d1d}.info{background:var(--b2);border-color:var(--b);color:#1e3a8a}
+.staff{display:flex;gap:10px;border-bottom:1px solid var(--line);padding:11px 0}.staff:last-child{border-bottom:0}.avatar{width:40px;height:40px;border-radius:50%;background:var(--g2);color:var(--g3);display:flex;align-items:center;justify-content:center;font-weight:900;flex-shrink:0}.grow{flex:1;min-width:0}.name{font-weight:800}.small{font-size:12px;color:var(--mut)}
+.cal-head,.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.cal-head div{text-align:center;font-size:11px;color:var(--mut);font-weight:900}.day{aspect-ratio:1;border:1.5px solid var(--line);border-radius:10px;background:white;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;font-weight:800;cursor:pointer;text-align:center}.day.empty{border:0;background:transparent;cursor:default}.day.weekend{background:#f8fafc}.day.work{background:var(--g2);border-color:var(--g);color:#14532d}.day.free{background:var(--r2);border-color:var(--r);color:#7f1d1d}.day.urlaub{background:#e5e7eb;border-color:#6b7280;color:#374151}.day.fb{background:var(--b2);border-color:var(--b);color:#1e3a8a}.day.eltern{background:var(--p2);border-color:var(--p);color:#4c1d95}.day span{font-size:9px;margin-top:2px}
+.wrap{overflow:auto}.plan{border-collapse:collapse;font-size:12px;min-width:1160px}.plan th,.plan td{border:1px solid var(--line);padding:5px;text-align:center}.plan th{background:#f8fafc;font-size:10px}.plan .sticky{position:sticky;left:0;background:#111827;color:white;text-align:left;z-index:2;min-width:150px}.plan .person{position:sticky;left:0;background:white;text-align:left;z-index:1;font-weight:800}
+.p-int{background:#fee2e2;color:#7f1d1d;font-weight:900}.p-zna1{background:#dbeafe;color:#1e3a8a;font-weight:900}.p-zna2{background:#dcfce7;color:#14532d;font-weight:900}.p-vis{background:#ede9fe;color:#5b21b6;font-weight:900}.p-fnd{background:#f1f5f9;color:#94a3b8}.p-block{background:#e5e7eb;color:#374151}.p-we{background:#f8fafc}.p-wish{outline:2px solid var(--a);outline-offset:-2px}
+.login{position:fixed;inset:0;z-index:100;background:linear-gradient(160deg,#0f4a28,#1a6b3c,#22c55e);display:flex;align-items:center;justify-content:center;padding:22px}.loginbox{background:white;border-radius:22px;padding:22px;width:100%;max-width:380px;box-shadow:0 20px 60px #0005}.tabs{display:flex;background:#f1f5f9;border-radius:12px;padding:3px;margin:14px 0}.tabs button{flex:1;border:0;background:transparent;border-radius:10px;padding:9px;font-weight:800;color:var(--mut)}.tabs button.active{background:white;color:var(--g);box-shadow:0 1px 5px #0002}
+.toast{position:fixed;left:50%;bottom:calc(76px + var(--safe));transform:translateX(-50%);background:#111827;color:white;padding:10px 16px;border-radius:999px;z-index:200;opacity:0;transition:.25s;white-space:nowrap}
+
+
+.personTag{display:inline-block;border-radius:7px;padding:3px 7px;font-size:12px;font-weight:900;margin:2px}
+.candBox{border:1px solid var(--line);border-radius:12px;padding:10px;margin:8px 0;background:#fff}
+.candTitle{font-weight:900;margin-bottom:6px}
+.candLine{font-size:13px;line-height:1.55;border-top:1px solid #f1f5f9;padding-top:5px;margin-top:5px}
+
+.statTable{width:100%;border-collapse:collapse;font-size:13px}
+.statTable th,.statTable td{border-bottom:1px solid var(--line);padding:7px;text-align:left}
+.statTable th{font-size:11px;color:var(--mut);text-transform:uppercase}
+.over{color:var(--a);font-weight:900}.under{color:var(--r);font-weight:900}.oknum{color:var(--g);font-weight:900}
+
+@media(max-width:760px){.grid2,.grid3{grid-template-columns:1fr}.hideMob{display:none}}
+@media print{.top,.nav,.noPrint,.login{display:none!important}main{padding:0}.screen{display:none!important}#s-plan{display:block!important}.card{box-shadow:none;border:0}.plan{font-size:9px;min-width:0;width:100%}@page{size:A4 landscape;margin:7mm}}
+</style>
+</head>
+<body>
+<div id="login" class="login">
+  <div class="loginbox">
+    <h2>🏥 Dienstplan Klinik</h2>
+    <p class="small">Bitte mit persönlichem Zugang anmelden.</p>
+    <div class="tabs"><button id="tabAdmin" class="active" onclick="loginRole='admin';uiLogin()">Admin</button><button id="tabStaff" onclick="loginRole='staff';uiLogin()">Mitarbeiter</button></div>
+    <div id="loginErr" class="alert bad hidden">Login fehlgeschlagen.</div>
+    <div id="adminLogin">
+      <div class="label">Admin-Passwort</div><input id="adminPw" type="password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div id="staffLogin" class="hidden">
+      <div class="label">Name</div><select id="staffSel"></select>
+      <div class="label" style="margin-top:8px">Passwort</div><input id="staffPw" type="password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn green" style="width:100%;margin-top:12px" onclick="doLogin()">Anmelden</button>
+  </div>
+</div>
+
+<div class="top"><div class="between"><div><h1>Dienstplan Klinik v8.4</h1><small id="who">Nicht angemeldet</small></div><button class="btn gray noPrint" onclick="logout()">Logout</button></div></div>
+<main>
+<section id="s-team" class="screen active">
+  <h2>Team & Regeln</h2>
+  <div class="alert info">Standardteam ist gemäß euren Regeln hinterlegt. Belal ist nicht eingeplant. Visitendienst ist entfernt. Begrenzte Profile wie Kanan, Arieskaite und Nuber erhalten bei Wunschdienst erhöhte Priorität.</div>
+  <div id="teamList" class="card"></div>
+  <div class="card noPrint">
+    <div class="label">Mitarbeiter bearbeiten / hinzufügen</div>
+    <div class="grid3">
+      <div><input id="eName" placeholder="Name"></div>
+      <div><select id="eFach"><option value="kim1">KIM1</option><option value="pulmo">Pulmo</option><option value="nephro">Nephro</option><option value="onko">Onko</option><option value="gastro">Gastro</option><option value="zna">ZNA</option></select></div>
+      <div><input id="eSoll" type="number" min="0" max="8" value="4" placeholder="Soll 24h"></div>
+    </div>
+    <div class="grid2" style="margin-top:8px">
+      <div><select id="eTypes" multiple><option value="int">Intensiv</option><option value="zna1">ZNA1</option><option value="zna2">ZNA2/Haus</option></select></div>
+      <div><textarea id="eNote" placeholder="Regel/Sonderregel"></textarea></div>
+    </div>
+    <div class="row" style="margin-top:8px"><button id="staffSaveBtn" class="btn green" onclick="saveStaffForm()">Hinzufügen</button><button class="btn gray" onclick="clearStaffForm()">Leeren</button><button class="btn gray" onclick="loadDefaults(true)">Standardteam neu laden</button></div>
+  </div>
+</section>
+
+<section id="s-wish" class="screen">
+  <h2>Wünsche</h2>
+  <div class="card">
+    <div class="grid3">
+      <div><div class="label">Mitarbeiter</div><select id="wPerson" onchange="renderWish()"></select></div>
+      <div><div class="label">Monat</div><select id="wMonth" onchange="renderWish()"></select></div>
+      <div><div class="label">Jahr</div><select id="wYear" onchange="renderWish()"><option>2026</option><option>2027</option><option>2028</option></select></div>
+    </div>
+    <div class="alert info" style="margin-top:10px">Klick: leer → Wunschdienst → Freiwunsch → Urlaub → Fortbildung → Elternzeit → leer. Keine Begrenzung.</div>
+  </div>
+  <div class="card">
+    <div class="cal-head"><div>Mo</div><div>Di</div><div>Mi</div><div>Do</div><div>Fr</div><div>Sa</div><div>So</div></div>
+    <div id="cal" class="cal"></div>
+    <p id="wishInfo" class="small" style="margin-top:10px"></p>
+  </div>
+  <div class="card"><div class="label">Notiz</div><input id="wNote" placeholder="z.B. Urlaub, Fortbildung..."><button class="btn green" style="margin-top:10px" onclick="saveWish()">Speichern</button></div>
+</section>
+
+<section id="s-plan" class="screen">
+  <h2>Plan erstellen</h2>
+  <div class="card noPrint">
+    <div class="alert info">Quota-Round Solver v8.4: Quota-Round Solver v8.4: zuerst Personen mit enger Verfügbarkeit, dann Minimum-Fairness, dann Restbesetzung. Ziel: niemand bleibt 0, während andere überproportional belastet werden.</div>
+    <div class="grid3">
+      <div><div class="label">Monat</div><select id="pMonth"></select></div>
+      <div><div class="label">Jahr</div><select id="pYear"><option>2026</option><option>2027</option><option>2028</option></select></div>
+      <div><div class="label">Feiertage</div><input id="holidays" placeholder="z.B. 1,25,26"></div>
+    </div>
+    <div class="grid2" style="margin-top:10px">
+      <div><div class="label">Planungsmodus</div><select id="solverMode"><option value="strict">Streng: Soll bleibt hart</option><option value="pragmatic">Pragmatisch: keine Lücken, aber Warnungen</option></select></div>
+      <div><div class="label">Solver-Versuche</div><select id="solverTries"><option value="120">120 schnell</option><option value="250" selected>250 empfohlen</option><option value="500">500 gründlich</option></select></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn green" onclick="generate()">Dienstplan erstellen</button>
+      <button class="btn outline" onclick="saveCurrentPlan()">Plan speichern</button>
+      <button class="btn gray" onclick="window.print()">Drucken/PDF</button>
+    </div>
+  </div>
+  <div id="warnings"></div>
+  <div class="card"><div class="label">Planmatrix</div><div class="wrap"><table id="planTbl" class="plan"></table></div></div>
+  <div class="card"><div class="label">Tagesübersicht</div><div id="dayView"></div></div>
+  <div class="card"><div class="label">Statistik / Bilanz</div><div id="statView"></div></div>
+</section>
+
+<section id="s-data" class="screen">
+  <h2>Daten & Einstellungen</h2>
+  <div class="card">
+    <div class="label">Export / Import</div>
+    <p class="small">Exportiert Mitarbeiter, Wünsche, Notizen, gespeicherte Pläne und Einstellungen als JSON.</p>
+    <div class="row" style="margin-top:10px">
+      <button class="btn green" onclick="exportJSON()">JSON exportieren</button>
+      <label class="btn outline" style="width:auto">JSON importieren<input type="file" accept=".json,application/json" class="hidden" onchange="importJSON(event)"></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="label">3-Monats-Statistik / Belastung</div>
+    <div class="grid3">
+      <div><div class="label">Startmonat</div><select id="statStartMonth"></select></div>
+      <div><div class="label">Jahr</div><select id="statStartYear"><option>2026</option><option>2027</option><option>2028</option></select></div>
+      <div style="display:flex;align-items:end"><button class="btn green" style="width:100%" onclick="renderThreeMonthStats()">Berechnen</button></div>
+    </div>
+    <div class="alert info" style="margin-top:10px">Grenze: maximal 13 Hauptdienste innerhalb von 3 Monaten. Bei Überschreitung sollte die Person im Folgemonat entlastet werden.</div>
+    <div id="threeMonthStats"></div>
+  </div>
+
+  <div class="card">
+    <div class="label">Admin-Passwort ändern</div>
+    <input id="oldAdminPw" type="password" placeholder="Aktuelles Admin-Passwort">
+    <input id="newAdminPw" type="password" placeholder="Neues Admin-Passwort" style="margin-top:8px">
+    <input id="newAdminPw2" type="password" placeholder="Neues Passwort wiederholen" style="margin-top:8px">
+    <button class="btn green" style="margin-top:10px" onclick="changeAdminPw()">Speichern</button>
+  </div>
+  <div class="card">
+    <div class="label">Hinweis</div>
+    <div class="alert warn">Diese HTML-Version speichert lokal im Browser. Für echte Mehrbenutzer-Synchronisation braucht man später Backend/Supabase/Firebase.</div>
+  </div>
+</section>
+</main>
+<nav id="nav" class="nav">
+  <button onclick="go('team',this)" class="active">👥<span>Team</span></button>
+  <button onclick="go('wish',this)">📅<span>Wünsche</span></button>
+  <button onclick="go('plan',this)">▶️<span>Plan</span></button>
+  <button onclick="go('data',this)">💾<span>Daten</span></button>
+</nav>
+
+<div id="editModal" class="login hidden" style="background:rgba(0,0,0,.45);">
+  <div class="loginbox">
+    <h2>Dienst manuell ändern</h2>
+    <p class="small" id="editTitle"></p>
+    <div class="label">Neuer Mitarbeiter</div>
+    <select id="editPerson"></select>
+    <div id="editCheck" class="alert info" style="margin-top:10px;">Bitte Mitarbeiter wählen.</div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn green" onclick="applyEdit()">Übernehmen</button>
+      <button class="btn gray" onclick="closeEdit()">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const FACH={kim1:'KIM1',pulmo:'Pulmo',nephro:'Nephro',onko:'Onko',gastro:'Gastro',zna:'ZNA'};
+const DUTY={int:'Intensiv',zna1:'ZNA1',zna2:'ZNA2/Haus',vis:'Visite'};
+const MONTHS=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+const DOW=['So','Mo','Di','Mi','Do','Fr','Sa'];
+const MAIN=['int','zna1','zna2'];
+const ADMIN_DEFAULT='admin123', STAFF_DEFAULT='dienst123';
+let staff=[], wishes={}, notes={}, savedPlans={}, settings={}, currentUser=null, loginRole='admin', draft={}, lastPlan=null,lastMeta=null,currentEdit=null,editingStaffId=null;
+
+function toastMsg(x,err=false){const t=document.getElementById('toast');t.textContent=x;t.style.background=err?'#991b1b':'#111827';t.style.opacity=1;setTimeout(()=>t.style.opacity=0,2200)}
+function id(){return Date.now()+Math.floor(Math.random()*1000000)}
+function save(){staff=staff.map(p=>({...p,types:(p.types||[]).filter(t=>t!=='vis')}));localStorage.setItem('dp3_staff',JSON.stringify(staff));localStorage.setItem('dp3_wishes',JSON.stringify(wishes));localStorage.setItem('dp3_notes',JSON.stringify(notes));localStorage.setItem('dp3_saved',JSON.stringify(savedPlans));localStorage.setItem('dp3_settings',JSON.stringify(settings))}
+function load(){try{staff=JSON.parse(localStorage.getItem('dp3_staff')||'[]');wishes=JSON.parse(localStorage.getItem('dp3_wishes')||'{}');notes=JSON.parse(localStorage.getItem('dp3_notes')||'{}');savedPlans=JSON.parse(localStorage.getItem('dp3_saved')||'{}');settings=JSON.parse(localStorage.getItem('dp3_settings')||'{}')}catch(e){staff=[];wishes={};notes={};savedPlans={};settings={}} staff=staff.map(p=>({...p,types:(p.types||[]).filter(t=>t!=='vis')})); if(!staff.length) loadDefaults(false)}
+function person(name,fach,soll,types,note='',pw=STAFF_DEFAULT,visSoll=0){return {id:id(),name,fach,soll,types,note,pw,visSoll}}
+function loadDefaults(show){
+staff=[
+person('Ghalayini','kim1',2,['int'],'nur 2 Dienste Intensiv; mittwochs oder Samstag'),
+person('Badakschani','kim1',2,['int'],'nur 2 Dienste Intensiv'),
+person('Hamdeniel','kim1',4,['int','zna1'],'Intensiv primär, ZNA1 möglich'),
+person('Alobead','kim1',4,['int'],'nur Intensiv'),
+person('Medina','kim1',4,['int','zna1'],'Intensiv primär, ZNA1 möglich'),
+person('Qarbach','kim1',4,['zna2'],'nur ZNA2'),
+person('Aquob','kim1',4,['zna1'],'nur ZNA1'),
+person('Eswaran','kim1',4,['zna2'],'nur ZNA2'),
+person('Alnana','kim1',4,['zna1'],'nur ZNA1'),
+person('Hülsmann','kim1',4,['zna1'],'nur ZNA1'),
+
+person('Kanan','pulmo',2,['int'],'nur Samstag'),
+person('Sheikhi','pulmo',4,['zna2'],'nur ZNA2'),
+person('Ibrahimi','pulmo',4,['int'],'nur Intensiv'),
+
+person('Alzawra','nephro',4,['int','zna1'],'Intensiv primär, ZNA1 möglich'),
+person('Arieskaite','nephro',3,['zna1'],'nur ZNA1'),
+person('Kara','nephro',4,['zna1'],'nur ZNA1'),
+person('Dayi','nephro',4,['int','zna1'],'Intensiv primär, ZNA1 möglich'),
+
+person('Kong','onko',4,['zna2'],'nur ZNA2'),
+person('Nuber','onko',2,['zna2'],'nur ZNA2'),
+person('Alchuib','onko',4,['int'],'nur Intensiv'),
+person('Kurnaz','onko',0,[],'neu; aktuell keine 24h-Dienste'),
+
+person('Alhaddad','gastro',4,['int','zna1'],'Intensiv primär, ZNA1 möglich'),
+person('Hamdar','gastro',4,['int','zna1'],'Ziel: 2 Intensiv + 2 ZNA1'),
+person('Neumann','gastro',4,['zna2'],'nur ZNA2'),
+person('Ammer','gastro',4,['zna1'],'nur ZNA1'),
+
+person('Tahiraj','zna',4,['zna2'],'nur ZNA2'),
+person('Kukunuv','zna',4,['zna2'],'nur ZNA2'),
+person('Louhabi','zna',4,['zna2'],'nur ZNA2'),
+person('Abdo','zna',4,['zna2'],'nur ZNA2')
+];
+save();renderAll();if(show)toastMsg('Standardteam geladen')}
+function initMonths(){['wMonth','pMonth','statStartMonth'].forEach(x=>{const el=document.getElementById(x);el.innerHTML=MONTHS.map((m,i)=>`<option value="${i}">${m}</option>`).join('');el.value=new Date().getMonth()})}
+function initials(n){return n.split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase()}
+function renderAll(){renderTeam();fillStaffSelects();renderWish()}
+function renderTeam(){
+let h='';
+for(const p of staff){
+ const cleanTypes=(p.types||[]).filter(t=>t!=='vis');
+ h+=`<div class="staff"><div class="avatar">${initials(p.name)}</div><div class="grow">
+   <div class="between"><div class="name">${p.name}</div>
+     <div class="row noPrint" style="gap:5px">
+       <button class="btn gray" style="padding:5px 8px" onclick="editStaff(${p.id})">Edit</button>
+       <button class="btn red" style="padding:5px 8px" onclick="delStaff(${p.id})">×</button>
+     </div>
+   </div>
+   <div class="small"><span class="badge f-${p.fach}">${FACH[p.fach]}</span> Soll ${p.soll} · ${cleanTypes.map(t=>`<span class="badge d-${t}">${DUTY[t]}</span>`).join(' ')}<br>${p.note||''}</div>
+ </div></div>`
+}
+teamList.innerHTML=h||'<p class="small">Keine Mitarbeiter.</p>';
+}
+function fillStaffSelects(){
+wPerson.innerHTML=staff.map(p=>`<option value="${p.id}">${p.name} · ${FACH[p.fach]}</option>`).join('');
+staffSel.innerHTML='<option value="">-- Name wählen --</option>'+staff.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+}
+function getStaffFormData(){
+ const types=[...eTypes.selectedOptions].map(o=>o.value).filter(t=>t!=='vis');
+ return {
+   name:eName.value.trim(),
+   fach:eFach.value,
+   soll:+eSoll.value||0,
+   types,
+   note:eNote.value.trim()
+ };
+}
+function saveStaffForm(){
+ const data=getStaffFormData();
+ if(!data.name||!data.types.length)return toastMsg('Name und Dienste fehlen',true);
+ if(editingStaffId){
+   const p=staff.find(x=>x.id===editingStaffId);
+   if(!p)return;
+   p.name=data.name;p.fach=data.fach;p.soll=data.soll;p.types=data.types;p.note=data.note;
+   toastMsg('Mitarbeiter aktualisiert');
+ }else{
+   staff.push(person(data.name,data.fach,data.soll,data.types,data.note));
+   toastMsg('Mitarbeiter hinzugefügt');
+ }
+ clearStaffForm();
+ save();renderAll();
+}
+function editStaff(pid){
+ const p=staff.find(x=>x.id===pid); if(!p)return;
+ editingStaffId=pid;
+ eName.value=p.name;
+ eFach.value=p.fach;
+ eSoll.value=p.soll;
+ eNote.value=p.note||'';
+ [...eTypes.options].forEach(o=>o.selected=(p.types||[]).filter(t=>t!=='vis').includes(o.value));
+ staffSaveBtn.textContent='Änderung speichern';
+ document.getElementById('eName').scrollIntoView({behavior:'smooth',block:'center'});
+}
+function clearStaffForm(){
+ editingStaffId=null;
+ eName.value=''; eFach.value='kim1'; eSoll.value=4; eNote.value='';
+ [...eTypes.options].forEach(o=>o.selected=false);
+ staffSaveBtn.textContent='Hinzufügen';
+}
+function delStaff(pid){staff=staff.filter(p=>p.id!==pid);save();renderAll()}
+function uiLogin(){tabAdmin.classList.toggle('active',loginRole==='admin');tabStaff.classList.toggle('active',loginRole==='staff');adminLogin.classList.toggle('hidden',loginRole!=='admin');staffLogin.classList.toggle('hidden',loginRole!=='staff')}
+function doLogin(){loginErr.classList.add('hidden'); if(loginRole==='admin'){const pw=settings.adminPw||ADMIN_DEFAULT;if(adminPw.value!==pw){loginErr.classList.remove('hidden');return}currentUser={role:'admin',name:'Admin'};startApp()}else{const p=staff.find(x=>String(x.id)===staffSel.value);if(!p||staffPw.value!==(p.pw||STAFF_DEFAULT)){loginErr.classList.remove('hidden');return}currentUser={role:'staff',id:p.id,name:p.name};startApp()}}
+function startApp(){login.classList.add('hidden');who.textContent=currentUser.role==='admin'?'Admin-Ansicht':`Mitarbeiter: ${currentUser.name}`;nav.classList.remove('hidden'); if(currentUser.role==='staff'){go('wish',nav.children[1]);document.getElementById('wPerson').value=currentUser.id;wPerson.disabled=true}else{wPerson.disabled=false}}
+function logout(){currentUser=null;login.classList.remove('hidden');adminPw.value='';staffPw.value=''}
+function go(s,btn){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById('s-'+s).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));btn.classList.add('active');if(s==='wish')renderWish()}
+
+/* Wishes */
+function wkey(pid,y,m){return `${pid}_${y}_${m}`}
+function renderWish(){if(!staff.length)return; if(currentUser&&currentUser.role==='staff')wPerson.value=currentUser.id; const pid=wPerson.value||staff[0]?.id;if(!pid)return;const m=+wMonth.value,y=+wYear.value;draft={...(wishes[wkey(pid,y,m)]||{})};wNote.value=notes[wkey(pid,y,m)]||'';drawCal()}
+function drawCal(){const m=+wMonth.value,y=+wYear.value;const fd=new Date(y,m,1).getDay();const off=fd===0?6:fd-1;const days=new Date(y,m+1,0).getDate();let h='';for(let i=0;i<off;i++)h+='<div class="day empty"></div>';for(let d=1;d<=days;d++){const st=draft[d]||'';const cls=st==='work'?'work':st==='free'?'free':st==='urlaub'?'urlaub':st==='fortbildung'?'fb':st==='elternzeit'?'eltern':(isWeekend(d,y,m)?'weekend':'');const lab=st==='work'?'Wunsch':st==='free'?'Frei':st==='urlaub'?'Urlaub':st==='fortbildung'?'FB':st==='elternzeit'?'Eltern':'';h+=`<div class="day ${cls}" onclick="cycleDay(${d})"><b>${d}</b><span>${lab}</span></div>`}cal.innerHTML=h;const v=Object.values(draft);wishInfo.textContent=`Wunschdienst ${v.filter(x=>x==='work').length} · Freiwunsch ${v.filter(x=>x==='free').length} · Urlaub ${v.filter(x=>x==='urlaub').length} · Fortbildung ${v.filter(x=>x==='fortbildung').length} · Elternzeit ${v.filter(x=>x==='elternzeit').length}`}
+function cycleDay(d){const arr=['','work','free','urlaub','fortbildung','elternzeit'];const nx=arr[(arr.indexOf(draft[d]||'')+1)%arr.length];if(nx)draft[d]=nx;else delete draft[d];drawCal()}
+function saveWish(){const pid=wPerson.value,m=+wMonth.value,y=+wYear.value;if(!pid)return;wishes[wkey(pid,y,m)]={...draft};notes[wkey(pid,y,m)]=wNote.value||'';save();toastMsg('Wünsche gespeichert')}
+
+/* Scheduling helpers */
+function getWish(pid,y,m,d){return (wishes[wkey(pid,y,m)]||{})[d]||''}
+function dow(d,y,m){return new Date(y,m,d).getDay()}
+function isWeekend(d,y,m){const w=dow(d,y,m);return w===5||w===6||w===0}
+function weWeight(d,y,m){const w=dow(d,y,m);return w===5?0.5:(w===6||w===0?1:0)}
+function fachRuleActive(d,y,m,hol){const w=dow(d,y,m); if(w===5||w===6)return false; if(hol.includes(d+1))return false; return w>=0&&w<=4}
+function blocked(pid,y,m,d){const w=getWish(pid,y,m,d); return w==='free'||w==='urlaub'||w==='fortbildung'||w==='elternzeit'}
+function same3Window(S,pid,d){return S.ass[pid].some(x=>Math.abs(x.day-d)<=2)}
+
+function weekKey(d,y,m){
+ const date=new Date(y,m,d);
+ const first=new Date(y,0,1);
+ const dayMs=86400000;
+ return `${date.getFullYear()}-W${Math.floor((date-first)/dayMs/7)+1}`;
+}
+function weekDutyCount(S,pid,d,y,m){
+ const wk=weekKey(d,y,m);
+ return (S.ass[pid]||[]).filter(x=>weekKey(x.day,y,m)===wk).length;
+}
+function hasWeekendDutyThisWeek(S,pid,d,y,m){
+ const wk=weekKey(d,y,m);
+ return (S.ass[pid]||[]).some(x=>weekKey(x.day,y,m)===wk && isWeekend(x.day,y,m));
+}
+function hasWeekdayDutyThisWeek(S,pid,d,y,m){
+ const wk=weekKey(d,y,m);
+ return (S.ass[pid]||[]).some(x=>weekKey(x.day,y,m)===wk && !isWeekend(x.day,y,m));
+}
+function weekRuleOK(S,pid,d,y,m){
+ return weekDutyCount(S,pid,d,y,m)<2;
+}
+
+function canSpecial(p,d,y,m,em=false){const w=dow(d,y,m); if(p.name==='Ghalayini')return w===3||w===6||(em&&w===5); if(p.name==='Kanan')return w===6; return true}
+function hasFachOnDay(S,fach,d){for(const duty of MAIN){const pid=S.plan[d][duty];if(pid&&pid!=='UNBESETZT'){const p=staff.find(x=>x.id===pid);if(p&&p.fach===fach)return true}}return false}
+function initState(days){const plan={},ass={},fnd={},wep={},vis={};for(let d=1;d<=days;d++)plan[d]={int:null,zna1:null,zna2:null,vis:[]};staff.forEach(p=>{ass[p.id]=[];fnd[p.id]=new Set();wep[p.id]=0;vis[p.id]=[]});return{plan,ass,fnd,wep,vis,warn:[],reason:[]}}
+function pick(S,duty,d,y,m,hol,em=false){
+let c=staff.filter(p=>{
+ if(!p.types.includes(duty))return false;
+ if(p.name==='Belal')return false;
+ if(blocked(p.id,y,m,d))return false;
+ if(S.fnd[p.id].has(d))return false;
+ if(same3Window(S,p.id,d))return false;
+ if(S.ass[p.id].length>=p.soll)return false;
+ if(!weekRuleOK(S,p.id,d,y,m))return false;
+ if(!canSpecial(p,d,y,m,em))return false;
+ if(isWeekend(d,y,m)&&S.wep[p.id]+weWeight(d,y,m)>2.01&&getWish(p.id,y,m,d)!=='work'&&!em)return false;
+ if(fachRuleActive(d,y,m,hol)&&hasFachOnDay(S,p.fach,d))return false;
+ return true;
+});
+if(!c.length&&em){
+ c=staff.filter(p=>
+  p.types.includes(duty) &&
+  p.name!=='Belal' &&
+  !blocked(p.id,y,m,d) &&
+  !S.fnd[p.id].has(d) &&
+  !same3Window(S,p.id,d) &&
+  weekRuleOK(S,p.id,d,y,m) &&
+  S.ass[p.id].length < p.soll &&
+  canSpecial(p,d,y,m,true)
+ );
+}
+if(!c.length)return null;
+c.sort((a,b)=>score(S,b,duty,d,y,m)-score(S,a,duty,d,y,m));
+return c[0]
+}
+function score(S,p,duty,d,y,m){
+let s=0;
+const w=getWish(p.id,y,m,d);
+const done=S.ass[p.id].length;
+const soll=Math.max(1,p.soll||1);
+const ratio=done/soll;
+const remaining=soll-done;
+const wc=weekDutyCount(S,p.id,d,y,m);
+
+/* Oberarzt-Prinzip: erst Unterversorgte, dann Passung */
+s += remaining*220;
+s -= ratio*320;
+if(done===0)s+=220;
+if(done>=soll)s-=5000;
+
+/* Wochenbelastung */
+if(wc===0)s+=80;
+if(wc===1)s-=60;
+if(wc>=2)s-=10000;
+if(isWeekend(d,y,m) && hasWeekendDutyThisWeek(S,p.id,d,y,m))s-=220;
+if(!isWeekend(d,y,m) && hasWeekdayDutyThisWeek(S,p.id,d,y,m))s-=120;
+
+/* Wünsche */
+if(w==='work')s+=350;
+if(w==='work' && limitedWishPriority(p))s+=900;
+if(w==='free')s-=5000;
+
+/* enge Verfügbarkeit und begrenzte Einsatzprofile nicht vergessen */
+s += constrainedLevel(p,y,m)*1.2;
+s += limitedPersonExtra(p);
+
+/* Wochenende fair halten */
+if(isWeekend(d,y,m))s-=S.wep[p.id]*130;
+
+/* Dienstprofil */
+if(duty==='int' && p.note.includes('Intensiv primär'))s+=70;
+if(duty==='zna1' && p.note.includes('ZNA1 möglich'))s+=20;
+if(duty==='zna1' && p.note.includes('nur ZNA1'))s+=80;
+if(duty==='zna2' && p.note.includes('nur ZNA2'))s+=80;
+
+/* Hamdar: Ziel 2 INT + 2 ZNA1, aber nur innerhalb Fairness */
+if(p.name==='Hamdar'){
+ const i=S.ass[p.id].filter(x=>x.duty==='int').length;
+ const z=S.ass[p.id].filter(x=>x.duty==='zna1').length;
+ if(duty==='int'&&i<2)s+=50;
+ if(duty==='zna1'&&z<2)s+=50;
+ if(done>=4)s-=800;
+}
+return s+Math.random()*0.001
+}
+function assign(S,duty,d,y,m,hol,em=false){if(S.plan[d][duty])return;const p=pick(S,duty,d,y,m,hol,em);if(!p)return;S.plan[d][duty]=p.id;S.ass[p.id].push({day:d,duty});S.wep[p.id]+=weWeight(d,y,m);const days=new Date(y,m+1,0).getDate();if(d+1<=days)S.fnd[p.id].add(d+1);S.reason.push(`${d}. ${MONTHS[m]} ${DUTY[duty]} → ${p.name}`)}
+function pickVis(S,d,y,m){
+let c=staff.filter(p=>p.types.includes('vis')&&p.name!=='Belal'&&!S.plan[d].vis.includes(p.id)&&!MAIN.some(x=>S.plan[d][x]===p.id)&&!S.fnd[p.id].has(d)&&!blocked(p.id,y,m,d));
+if(!c.length)return null;c.sort((a,b)=>visScore(S,b,d,y,m)-visScore(S,a,d,y,m));return c[0]
+}
+function visScore(S,p,d,y,m){let s=0;if(getWish(p.id,y,m,d)==='work')s+=100;if(p.name==='Kurnaz')s+=300;if((p.visSoll||0)>S.vis[p.id].length)s+=180;if(S.ass[p.id].length<p.soll)s+=20;s-=S.vis[p.id].length*90;s-=S.wep[p.id]*20;return s}
+function canAssignSpecific(S,p,duty,d,y,m,hol,allowOver=false){
+ if(!p || p.name==='Belal')return false;
+ if(!p.types.includes(duty))return false;
+ if(S.plan[d][duty])return false;
+ if(blocked(p.id,y,m,d))return false;
+ if(S.fnd[p.id].has(d))return false;
+ if(S.ass[p.id].some(x=>x.day===d))return false;
+ if(same3Window(S,p.id,d))return false;
+ if(!weekRuleOK(S,p.id,d,y,m))return false;
+ if(!allowOver && S.ass[p.id].length>=p.soll)return false;
+ if(!canSpecial(p,d,y,m,false))return false;
+ if(fachRuleActive(d,y,m,hol)&&hasFachOnDay(S,p.fach,d))return false;
+ return true;
+}
+function assignSpecific(S,p,duty,d,y,m,hol,reason=''){
+ if(!canAssignSpecific(S,p,duty,d,y,m,hol,false))return false;
+ S.plan[d][duty]=p.id;
+ S.ass[p.id].push({day:d,duty});
+ S.wep[p.id]+=weWeight(d,y,m);
+ const days=new Date(y,m+1,0).getDate();
+ if(d+1<=days)S.fnd[p.id].add(d+1);
+ S.reason.push(`${d}. ${MONTHS[m]} ${DUTY[duty]} → ${p.name}${reason?' ('+reason+')':''}`);
+ return true;
+}
+function possibleSlotsFor(S,p,y,m,hol){
+ const days=new Date(y,m+1,0).getDate();
+ const arr=[];
+ for(let d=1;d<=days;d++){
+  for(const duty of MAIN){
+   if(canAssignSpecific(S,p,duty,d,y,m,hol,false)){
+    let sc=0;
+    const w=getWish(p.id,y,m,d);
+    if(w==='work')sc+=500;
+    if(w==='work' && limitedWishPriority(p))sc+=900;
+    if(isWeekend(d,y,m))sc+=40-weWeight(d,y,m)*20;
+    if(p.name==='Kanan'&&dow(d,y,m)===6)sc+=800;
+    if(p.name==='Ghalayini'&&(dow(d,y,m)===3||dow(d,y,m)===6))sc+=700;
+    if(p.soll<=2)sc+=250;
+    sc+=Math.max(0,20-d); // früher im Monat leicht bevorzugt
+    arr.push({d,duty,sc});
+   }
+  }
+ }
+ return arr.sort((a,b)=>b.sc-a.sc);
+}
+
+function limitedWishPriority(p){
+ return ['Kanan','Arieskaite','Nuber'].includes(p.name);
+}
+function limitedPersonExtra(p){
+ if(['Kanan','Arieskaite','Nuber'].includes(p.name))return 450;
+ return 0;
+}
+
+function constrainedLevel(p,y,m){
+ let level=0;
+ if(p.soll<=2)level+=100;
+ if((p.types||[]).length===1)level+=60;
+ if(p.name==='Kanan')level+=300;
+ if(p.name==='Arieskaite')level+=220;
+ if(p.name==='Nuber')level+=220;
+ if(p.name==='Ghalayini')level+=250;
+ if(p.name==='Badakschani')level+=180;
+ if(p.note&&p.note.includes('nur Samstag'))level+=200;
+ return level;
+}
+function preassignConstrained(S,y,m,hol){
+ const persons=[...staff].filter(p=>p.soll>0&&p.name!=='Belal').sort((a,b)=>constrainedLevel(b,y,m)-constrainedLevel(a,y,m));
+ for(const p of persons){
+  if(constrainedLevel(p,y,m)<=0)continue;
+  const target=p.soll;
+  let guard=0;
+  while(S.ass[p.id].length<target && guard++<20){
+   const slots=possibleSlotsFor(S,p,y,m,hol);
+   if(!slots.length)break;
+   const best=slots[0];
+   assignSpecific(S,p,best.duty,best.d,y,m,hol,'enge Verfügbarkeit zuerst');
+  }
+ }
+}
+function fillMinimumFairness(S,y,m,hol){
+ const days=new Date(y,m+1,0).getDate();
+ const all=[...Array(days)].map((_,i)=>i+1);
+ let changed=true,loops=0;
+ while(changed && loops++<6){
+  changed=false;
+  const under=[...staff].filter(p=>p.soll>0&&p.name!=='Belal'&&S.ass[p.id].length<Math.min(p.soll,Math.max(1,p.soll-1)))
+    .sort((a,b)=>(S.ass[a.id].length/a.soll)-(S.ass[b.id].length/b.soll));
+  for(const p of under){
+   const slots=possibleSlotsFor(S,p,y,m,hol);
+   if(slots.length){
+    const best=slots[0];
+    if(assignSpecific(S,p,best.duty,best.d,y,m,hol,'Minimum-Fairness'))changed=true;
+   }
+  }
+ }
+}
+function hardBlockedBasic(S,p,duty,d,y,m,hol){
+ if(!p || p.name==='Belal')return 'Belal macht keine Dienste';
+ if(!p.types.includes(duty))return 'Diensttyp nicht erlaubt';
+ if(S.plan[d][duty])return 'Dienst bereits besetzt';
+ if(blocked(p.id,y,m,d))return 'Freiwunsch/Urlaub/Fortbildung/Elternzeit';
+ if(S.fnd[p.id].has(d))return 'FND';
+ if(S.ass[p.id].some(x=>x.day===d))return 'bereits Dienst am selben Tag';
+ if(!canSpecial(p,d,y,m,true))return 'Sonderregel Person';
+ if(fachRuleActive(d,y,m,hol)&&hasFachOnDay(S,p.fach,d))return 'Fachbereich doppelt';
+ return '';
+}
+function candidatePool(S,duty,d,y,m,hol,relaxLevel=0){
+ /* Keine automatische Soll-Überschreitung. RelaxLevel lockert nur 3-Tage/Week leicht, aber nie Soll. */
+ const arr=[];
+ for(const p of staff){
+  const hard=hardBlockedBasic(S,p,duty,d,y,m,hol);
+  if(hard)continue;
+  if(S.ass[p.id].length>=p.soll)continue; // wichtigste Regel: Hard Limit
+  const issues=[];
+  if(same3Window(S,p.id,d))issues.push('3-Tage-Abstand gelockert');
+  if(!weekRuleOK(S,p.id,d,y,m))issues.push('>2 Dienste/Woche');
+  if(relaxLevel<1 && issues.includes('3-Tage-Abstand gelockert'))continue;
+  if(relaxLevel<2 && issues.includes('>2 Dienste/Woche'))continue;
+  arr.push({p,issues,score:balancedScore(S,p,duty,d,y,m,issues)});
+ }
+ return arr.sort((a,b)=>b.score-a.score);
+}
+function balancedScore(S,p,duty,d,y,m,issues=[]){
+ const w=getWish(p.id,y,m,d);
+ const done=S.ass[p.id].length;
+ const soll=Math.max(1,p.soll||1);
+ const ratio=done/soll;
+ const missing=soll-done;
+ const wc=weekDutyCount(S,p.id,d,y,m);
+ let s=0;
+
+ /* Kern: fairness nach Ist/Soll */
+ s += missing*260;
+ s -= ratio*500;
+ if(done===0)s+=300;
+ if(ratio<=0.25)s+=450;
+ if(ratio<=0.50)s+=250;
+
+ /* Begrenzte Profile, aber nur bis Soll */
+ s += constrainedLevel(p,y,m)*1.0;
+ if(w==='work')s+=420;
+ if(w==='work' && limitedWishPriority(p))s+=600;
+
+ /* Wochenlogik */
+ if(wc===0)s+=100;
+ if(wc===1)s-=80;
+ if(wc>=2)s-=2000;
+ if(isWeekend(d,y,m))s-=S.wep[p.id]*140;
+ if(isWeekend(d,y,m)&&hasWeekendDutyThisWeek(S,p.id,d,y,m))s-=250;
+ if(!isWeekend(d,y,m)&&hasWeekdayDutyThisWeek(S,p.id,d,y,m))s-=140;
+
+ /* Dienstprofil */
+ if(duty==='int'&&p.note.includes('Intensiv primär'))s+=80;
+ if(duty==='zna1'&&p.note.includes('ZNA1 möglich'))s+=35;
+ if(duty==='zna1'&&p.note.includes('nur ZNA1'))s+=100;
+ if(duty==='zna2'&&p.note.includes('nur ZNA2'))s+=100;
+
+ /* Hamdar Wunschprofil 2/2, aber nicht dominant */
+ if(p.name==='Hamdar'){
+  const i=S.ass[p.id].filter(x=>x.duty==='int').length;
+  const z=S.ass[p.id].filter(x=>x.duty==='zna1').length;
+  if(duty==='int'&&i<2)s+=70;
+  if(duty==='zna1'&&z<2)s+=70;
+ }
+
+ if(issues.includes('3-Tage-Abstand gelockert'))s-=500;
+ if(issues.includes('>2 Dienste/Woche'))s-=800;
+ return s+Math.random()*0.001;
+}
+function placeCandidate(S,duty,d,y,m,cand,reason){
+ const p=cand.p;
+ S.plan[d][duty]=p.id;
+ S.ass[p.id].push({day:d,duty});
+ S.wep[p.id]+=weWeight(d,y,m);
+ const days=new Date(y,m+1,0).getDate();
+ if(d+1<=days)S.fnd[p.id].add(d+1);
+ const warn=cand.issues&&cand.issues.length?` – Warnung: ${cand.issues.join(', ')}`:'';
+ if(warn)S.warn.push(`${d}. ${MONTHS[m]} ${DUTY[duty]}: ${p.name}${warn}.`);
+ S.reason.push(`${d}. ${MONTHS[m]} ${DUTY[duty]} → ${p.name}${reason?' ('+reason+')':''}${warn}`);
+}
+function fillSlotBalanced(S,duty,d,y,m,hol){
+ for(let level=0;level<=2;level++){
+  const c=candidatePool(S,duty,d,y,m,hol,level);
+  if(c.length){placeCandidate(S,duty,d,y,m,c[0],level===0?'regulär':`Relax-Level ${level}`);return true;}
+ }
+ return false;
+}
+function prefillLimitedProfiles(S,y,m,hol){
+ const days=new Date(y,m+1,0).getDate();
+ const limited=[...staff].filter(p=>p.soll>0&&p.name!=='Belal'&&constrainedLevel(p,y,m)>0)
+   .sort((a,b)=>constrainedLevel(b,y,m)-constrainedLevel(a,y,m));
+ for(const p of limited){
+  let guard=0;
+  while(S.ass[p.id].length<p.soll && guard++<20){
+   let best=null;
+   for(let d=1;d<=days;d++){
+    for(const duty of MAIN){
+     if(!p.types.includes(duty)||S.plan[d][duty])continue;
+     const pool=candidatePool(S,duty,d,y,m,hol,0).filter(x=>x.p.id===p.id);
+     if(pool.length){
+      const wish=getWish(p.id,y,m,d)==='work'?1000:0;
+      const sc=pool[0].score+wish;
+      if(!best||sc>best.sc)best={d,duty,c:pool[0],sc};
+     }
+    }
+   }
+   if(!best)break;
+   placeCandidate(S,best.duty,best.d,y,m,best.c,'begrenztes Profil zuerst');
+  }
+ }
+}
+function minimumFairnessPass(S,y,m,hol){
+ const days=new Date(y,m+1,0).getDate();
+ let changed=true,loops=0;
+ while(changed&&loops++<8){
+  changed=false;
+  const under=[...staff].filter(p=>p.soll>0&&p.name!=='Belal'&&S.ass[p.id].length<Math.ceil(p.soll/2))
+    .sort((a,b)=>(S.ass[a.id].length/a.soll)-(S.ass[b.id].length/b.soll));
+  for(const p of under){
+   let best=null;
+   for(let d=1;d<=days;d++){
+    for(const duty of MAIN){
+     if(!p.types.includes(duty)||S.plan[d][duty])continue;
+     const pool=candidatePool(S,duty,d,y,m,hol,0).filter(x=>x.p.id===p.id);
+     if(pool.length&&(!best||pool[0].score>best.c.score))best={d,duty,c:pool[0]};
+    }
+   }
+   if(best){placeCandidate(S,best.duty,best.d,y,m,best.c,'Minimum-Fairness');changed=true;}
+  }
+ }
+}
+function listOpenSlots(S,days){
+ const arr=[];
+ for(let d=1;d<=days;d++)for(const duty of MAIN)if(!S.plan[d][duty])arr.push({d,duty});
+ return arr;
+}
+function rescueUnderfilled(S,y,m,hol){
+ /* Tauscht offene Slots bevorzugt an unterversorgte Personen */
+ const days=new Date(y,m+1,0).getDate();
+ let loops=0,changed=true;
+ while(changed && loops++<4){
+  changed=false;
+  const open=listOpenSlots(S,days);
+  if(!open.length)break;
+  const under=[...staff].filter(p=>p.soll>0&&p.name!=='Belal'&&S.ass[p.id].length<p.soll)
+    .sort((a,b)=>(S.ass[a.id].length/a.soll)-(S.ass[b.id].length/b.soll));
+  for(const p of under){
+    for(const slot of open){
+      if(!p.types.includes(slot.duty))continue;
+      for(let level=0;level<=2;level++){
+        const c=candidatePool(S,slot.duty,slot.d,y,m,hol,level).filter(x=>x.p.id===p.id);
+        if(c.length){
+          placeCandidate(S,slot.duty,slot.d,y,m,c[0],'Unterversorgte Person bevorzugt');
+          changed=true;
+          break;
+        }
+      }
+      if(changed)break;
+    }
+  }
+ }
+}
+function cloneState(S){
+ const days=Object.keys(S.plan).length;
+ const plan={};
+ for(let d=1;d<=days;d++)plan[d]={...S.plan[d]};
+ const ass={},fnd={},wep={},vis={};
+ staff.forEach(p=>{
+  ass[p.id]=[...(S.ass[p.id]||[])];
+  fnd[p.id]=new Set([...(S.fnd[p.id]||[])]);
+  wep[p.id]=S.wep[p.id]||0;
+  vis[p.id]=[...(S.vis[p.id]||[])];
+ });
+ return {plan,ass,fnd,wep,vis,warn:[...(S.warn||[])],reason:[...(S.reason||[])]};
+}
+function solverWeekPenalty(S,pid,d,y,m){
+ let c=weekDutyCount(S,pid,d,y,m);
+ if(c>=2)return 900;
+ if(c===1)return 70;
+ return 0;
+}
+
+function hardSameFachOnDay(S,p,d,duty){
+ if(!p)return false;
+ for(const otherDuty of MAIN){
+   if(otherDuty===duty)continue;
+   const otherId=S.plan[d][otherDuty];
+   if(!otherId || otherId==='UNBESETZT')continue;
+   const other=staff.find(x=>x.id===otherId);
+   if(other && other.fach===p.fach)return true;
+ }
+ return false;
+}
+
+function solverCandidates(S,duty,d,y,m,hol,mode,phase){
+ const arr=[];
+ for(const p of staff){
+  if(!p || p.name==='Belal')continue;
+  if(!p.types.includes(duty))continue;
+  if(S.plan[d][duty])continue;
+  if(blocked(p.id,y,m,d))continue;
+  if(S.fnd[p.id].has(d))continue;
+  if(S.ass[p.id].some(x=>x.day===d))continue;
+  if(!canSpecial(p,d,y,m,true))continue;
+  if(hardSameFachOnDay(S,p,d,duty))continue; // rote Linie: kein gleicher Fachbereich am selben Tag
+
+  const issues=[];
+  const overSoll=S.ass[p.id].length>=p.soll;
+  const three=same3Window(S,p.id,d);
+  const week=!weekRuleOK(S,p.id,d,y,m);
+
+  if(overSoll)issues.push('über Soll');
+  if(three)issues.push('3-Tage-Abstand');
+  if(week)issues.push('>2/Woche');
+
+  if(mode==='strict' && overSoll)continue;
+  if(phase===0 && (three||week))continue;
+  if(phase===1 && week)continue;
+  if(phase<2 && overSoll)continue;
+  if(mode==='strict' && phase>=2 && overSoll)continue;
+
+  let sc=0;
+  const done=S.ass[p.id].length;
+  const soll=Math.max(1,p.soll||1);
+  const ratio=done/soll;
+  const missing=soll-done;
+  const w=getWish(p.id,y,m,d);
+
+  // Global fairness first
+  sc += Math.max(0,missing)*420;
+  sc -= ratio*650;
+  if(done===0 && p.soll>0)sc += 950;
+  if(ratio<=0.25)sc += 650;
+  if(ratio<=0.50)sc += 350;
+
+  // Wünsche und begrenzte Profile
+  if(w==='work')sc += 650;
+  if(w==='work' && limitedWishPriority(p))sc += 900;
+  sc += constrainedLevel(p,y,m)*1.7;
+
+  // Weekend fairness
+  if(isWeekend(d,y,m)){
+    sc -= (S.wep[p.id]||0)*180;
+    if(hasWeekendDutyThisWeek(S,p.id,d,y,m))sc -= 300;
+  }else{
+    if(hasWeekdayDutyThisWeek(S,p.id,d,y,m))sc -= 160;
+  }
+
+  // Dienstprofil
+  if(duty==='int'&&p.note.includes('Intensiv primär'))sc += 100;
+  if(duty==='zna1'&&p.note.includes('ZNA1 möglich'))sc += 40;
+  if(duty==='zna1'&&p.note.includes('nur ZNA1'))sc += 130;
+  if(duty==='zna2'&&p.note.includes('nur ZNA2'))sc += 130;
+
+  if(p.name==='Hamdar'){
+    const i=S.ass[p.id].filter(x=>x.duty==='int').length;
+    const z=S.ass[p.id].filter(x=>x.duty==='zna1').length;
+    if(duty==='int'&&i<2)sc += 90;
+    if(duty==='zna1'&&z<2)sc += 90;
+  }
+
+  if(three)sc -= 750;
+  if(week)sc -= 1200;
+  if(overSoll)sc -= 2000;
+
+  // randomized tie-break per attempt
+  sc += Math.random()*120;
+
+  arr.push({p,issues,score:sc});
+ }
+ return arr.sort((a,b)=>b.score-a.score);
+}
+function solverPlace(S,duty,d,y,m,cand){
+ const p=cand.p;
+ S.plan[d][duty]=p.id;
+ S.ass[p.id].push({day:d,duty});
+ S.wep[p.id]+=weWeight(d,y,m);
+ const days=Object.keys(S.plan).length;
+ if(d+1<=days)S.fnd[p.id].add(d+1);
+ if(cand.issues&&cand.issues.length){
+  S.warn.push(`${d}. ${MONTHS[m]} ${DUTY[duty]}: ${p.name} – Warnung: ${cand.issues.join(', ')}.`);
+ }
+}
+function slotScarcity(duty,d,y,m,hol){
+ let c=0;
+ for(const p of staff){
+  if(p.name==='Belal')continue;
+  if(!p.types.includes(duty))continue;
+  if(blocked(p.id,y,m,d))continue;
+  if(!canSpecial(p,d,y,m,true))continue;
+  c++;
+ }
+ return c;
+}
+function buildSlots(days,y,m,hol){
+ const slots=[];
+ for(let d=1;d<=days;d++){
+  for(const duty of MAIN){
+   slots.push({d,duty,scarcity:slotScarcity(duty,d,y,m,hol),we:isWeekend(d,y,m)?1:0});
+  }
+ }
+ // scarce slots first, then weekends, then randomized within same level
+ return slots.sort((a,b)=>(a.scarcity-b.scarcity)||(b.we-a.we)||((Math.random()>.5)?1:-1));
+}
+function evaluatePlan(S,days,y,m,mode){
+ let penalty=0;
+ let open=0;
+ for(let d=1;d<=days;d++){
+  for(const duty of MAIN){
+   if(!S.plan[d][duty]||S.plan[d][duty]==='UNBESETZT'){open++; penalty+=100000;}
+  }
+ }
+ const ratios=[];
+ for(const p of staff){
+  if(p.soll<=0||p.name==='Belal')continue;
+  const ist=S.ass[p.id].length;
+  const diff=Math.abs(p.soll-ist);
+  const ratio=ist/p.soll;
+  ratios.push(ratio);
+
+  if(ist===0)penalty+=50000;
+  if(ratio<0.50)penalty+=18000;
+  if(ratio<0.75)penalty+=5000;
+  penalty+=diff*1800;
+
+  if(ist>p.soll)penalty+=(ist-p.soll)*(mode==='strict'?80000:9000);
+
+  // week overload
+  const weeks={};
+  S.ass[p.id].forEach(x=>{const k=weekKey(x.day,y,m);weeks[k]=(weeks[k]||0)+1});
+  Object.values(weeks).forEach(n=>{if(n>2)penalty+=(n-2)*12000});
+
+  // weekend load
+  penalty+=(S.wep[p.id]||0)*80;
+ }
+ if(ratios.length){
+  const avg=ratios.reduce((a,b)=>a+b,0)/ratios.length;
+  const variance=ratios.reduce((a,b)=>a+(b-avg)*(b-avg),0)/ratios.length;
+  penalty+=variance*20000;
+ }
+ penalty+=S.warn.length*120;
+ return {penalty,open};
+}
+function createAttempt(days,y,m,hol,mode){
+ let S=initState(days);
+ const slots=buildSlots(days,y,m,hol);
+
+ // Pre-reserve very limited wish slots first
+ const limited=staff.filter(p=>p.soll>0&&p.name!=='Belal'&&(constrainedLevel(p,y,m)>0||limitedWishPriority(p)))
+   .sort((a,b)=>constrainedLevel(b,y,m)-constrainedLevel(a,y,m));
+ for(const p of limited){
+  for(let guard=0; guard<p.soll; guard++){
+   let best=null;
+   for(const sl of slots){
+    if(S.plan[sl.d][sl.duty])continue;
+    if(!p.types.includes(sl.duty))continue;
+    const c=solverCandidates(S,sl.duty,sl.d,y,m,hol,mode,0).filter(x=>x.p.id===p.id);
+    if(c.length){
+      const wish=getWish(p.id,y,m,sl.d)==='work'?1500:0;
+      const sc=c[0].score+wish;
+      if(!best||sc>best.sc)best={sl,c:c[0],sc};
+    }
+   }
+   if(best)solverPlace(S,best.sl.duty,best.sl.d,y,m,best.c);
+   else break;
+  }
+ }
+
+ // Fill all slots with progressively relaxed phases
+ for(const sl of slots){
+  if(S.plan[sl.d][sl.duty])continue;
+  let placed=false;
+  for(let phase=0; phase<=3; phase++){
+   const cand=solverCandidates(S,sl.duty,sl.d,y,m,hol,mode,phase);
+   if(cand.length){
+    solverPlace(S,sl.duty,sl.d,y,m,cand[0]);
+    placed=true;
+    break;
+   }
+  }
+  if(!placed)S.plan[sl.d][sl.duty]='UNBESETZT';
+ }
+ return S;
+}
+
+function validateRedLines(S,days){
+ for(let d=1;d<=days;d++){
+   const seen={};
+   for(const duty of MAIN){
+     const pid=S.plan[d][duty];
+     if(!pid || pid==='UNBESETZT')continue;
+     const p=staff.find(x=>x.id===pid);
+     if(!p)continue;
+     if(seen[p.fach]){
+       S.warn.unshift(`ROTE LINIE: ${d}. ${MONTHS[lastMeta?lastMeta.month:+pMonth.value]} – Fachbereich ${FACH[p.fach]} doppelt (${seen[p.fach]} + ${p.name}). Bitte manuell korrigieren.`);
+     }else{
+       seen[p.fach]=p.name;
+     }
+   }
+ }
+}
+
+function generate(){
+ const m=+pMonth.value,y=+pYear.value,days=new Date(y,m+1,0).getDate();
+ const hol=(holidays.value||'').split(',').map(x=>+x.trim()).filter(Boolean);
+ const mode=(document.getElementById('solverMode')?solverMode.value:'strict');
+ const tries=+(document.getElementById('solverTries')?solverTries.value:250);
+
+ let best=null,bestEval=null;
+ for(let i=0;i<tries;i++){
+  const S=createAttempt(days,y,m,hol,mode);
+  const ev=evaluatePlan(S,days,y,m,mode);
+  if(!best||ev.penalty<bestEval.penalty){
+    best=S;bestEval=ev;
+    if(ev.open===0 && ev.penalty<20000 && i>40)break;
+  }
+ }
+
+ const S=best;
+ for(let d=1;d<=days;d++){
+  for(const duty of MAIN){
+   if(!S.plan[d][duty])S.plan[d][duty]='UNBESETZT';
+   if(S.plan[d][duty]==='UNBESETZT')S.warn.push(`${d}. ${MONTHS[m]}: ${DUTY[duty]} unbesetzt.`);
+  }
+ }
+ for(const p of staff){
+  const ist=S.ass[p.id].length;
+  if(p.soll>0&&ist===0)S.warn.push(`${p.name}: 0 Dienste trotz Soll ${p.soll} – bitte prüfen.`);
+  if(ist>p.soll)S.warn.push(`${p.name}: über Soll geplant (${ist}/${p.soll}).`);
+  const weeks={};
+  S.ass[p.id].forEach(x=>{const k=weekKey(x.day,y,m);weeks[k]=(weeks[k]||0)+1});
+  Object.entries(weeks).forEach(([wk,n])=>{if(n>2)S.warn.push(`${p.name}: ${n} Dienste in ${wk}.`)});
+ }
+ S.warn.unshift(`Solver v7.1: ${tries} Versuche, bester Penalty-Wert ${Math.round(bestEval.penalty)}.`);
+ validateRedLines(S,days);
+ lastPlan=S.plan;lastMeta={...S,month:m,year:y,days,hol};renderPlan();toastMsg('Plan erstellt');
+}
+function pname(pid){if(pid==='UNBESETZT')return'UNBESETZT';return staff.find(p=>p.id===pid)?.name||'?'}
+
+function personBadge(pid){
+ if(pid==='UNBESETZT')return '<span class="badge" style="background:#fee2e2;color:#991b1b">UNBESETZT</span>';
+ const p=staff.find(x=>x.id===pid);
+ if(!p)return '<span class="badge">?</span>';
+ return `<span class="personTag f-${p.fach}">${p.name}</span>`;
+}
+function canTakeOverHard(p,duty,d,y,m,hol){
+ const issues=[];
+ if(!p.types.includes(duty))issues.push('Diensttyp nicht erlaubt');
+ if(p.name==='Belal')issues.push('Belal macht keine Dienste');
+ if(blocked(p.id,y,m,d))issues.push('Frei/Urlaub/Fortbildung/Elternzeit');
+ if(lastMeta.fnd[p.id]&&lastMeta.fnd[p.id].has(d))issues.push('FND');
+ if(lastMeta.ass[p.id]&&lastMeta.ass[p.id].some(x=>x.day===d))issues.push('bereits Dienst am selben Tag');
+ if(lastMeta.ass[p.id]&&lastMeta.ass[p.id].some(x=>Math.abs(x.day-d)<=2))issues.push('3-Tage-Abstand');
+ if(!weekRuleOK(lastMeta,p.id,d,y,m))issues.push('bereits 2 Dienste in dieser Woche');
+ if(!canSpecial(p,d,y,m,true))issues.push('Sonderregel Person');
+ if(fachRuleActive(d,y,m,hol)&&hasFachOnDay(lastMeta,p.fach,d))issues.push('Fachbereich doppelt');
+ return issues;
+}
+function overSollAllowed(p,duty){
+ if(duty==='zna1' && ['Alnana','Hamdar','Kara'].includes(p.name))return true;
+ return getWish(p.id,lastMeta.year,lastMeta.month,currentSuggestionDay)==='work';
+}
+let currentSuggestionDay=null;
+function takeoverSuggestionsFor(d,duty){
+ if(!lastMeta)return [];
+ const y=lastMeta.year,m=lastMeta.month,hol=lastMeta.hol||[];
+ currentSuggestionDay=d;
+ let arr=[];
+ for(const p of staff){
+  if(!p.types.includes(duty) || p.name==='Belal')continue;
+  const hardIssues=canTakeOverHard(p,duty,d,y,m,hol);
+  const ist=lastMeta.ass[p.id]?.length||0;
+  const over=ist>=p.soll;
+  const wish=getWish(p.id,y,m,d);
+  const allowOver = !over || (duty==='zna1' && ['Alnana','Hamdar','Kara'].includes(p.name)) || wish==='work';
+  if(hardIssues.length===0 && allowOver){
+    let score=0;
+    if(wish==='work')score+=500;
+    if(wish==='work' && limitedWishPriority(p))score+=900;
+    if(!over)score+=300;
+    if(duty==='zna1' && ['Alnana','Hamdar','Kara'].includes(p.name))score+=220;
+    score+=(p.soll-ist)*40;
+    score-=lastMeta.wep[p.id]*30;
+    arr.push({p,ist,over,wish,score,notes:[]});
+  } else if(hardIssues.length<=1 && allowOver) {
+    let score=0;
+    if(wish==='work')score+=400;
+    if(duty==='zna1' && ['Alnana','Hamdar','Kara'].includes(p.name))score+=180;
+    score-=hardIssues.length*80;
+    arr.push({p,ist,over,wish,score,notes:hardIssues});
+  }
+ }
+ currentSuggestionDay=null;
+ return arr.sort((a,b)=>b.score-a.score).slice(0,6);
+}
+function renderTakeoverSuggestions(){
+ if(!lastPlan||!lastMeta)return '';
+ const y=lastMeta.year,m=lastMeta.month;
+ let blocks='';
+ for(let d=1;d<=lastMeta.days;d++){
+  for(const duty of MAIN){
+   if(lastPlan[d][duty]==='UNBESETZT'){
+    const cand=takeoverSuggestionsFor(d,duty);
+    blocks+=`<div class="candBox"><div class="candTitle">${DOW[dow(d,y,m)]}, ${d}. ${MONTHS[m]} – ${DUTY[duty]} unbesetzt</div>`;
+    if(!cand.length){
+      blocks+='<div class="candLine">Keine geeigneten Kandidaten ohne harte Regelverletzung gefunden.</div>';
+    }else{
+      blocks+=cand.map(c=>{
+        const w=c.wish==='work'?' · Wunschdienst':c.wish==='free'?' · Freiwunsch':c.wish?' · '+c.wish:'';
+        const over=c.over?` · über Soll möglich (${c.ist}/${c.p.soll})`:` · Ist ${c.ist}/${c.p.soll}`;
+        const warn=c.notes.length?` · Warnung: ${c.notes.join(', ')}`:'';
+        const pr=(duty==='zna1'&&['Alnana','Hamdar','Kara'].includes(c.p.name))?' · ZNA1-Mehrdienst-Priorität':'';
+        return `<div class="candLine">${personBadge(c.p.id)}${over}${w}${pr}${warn}</div>`;
+      }).join('');
+    }
+    blocks+='</div>';
+   }
+  }
+ }
+ return blocks?`<div class="card"><div class="label">Übernahmevorschläge für unbesetzte Dienste</div>${blocks}</div>`:'';
+}
+
+function renderPlan(){
+const S=lastMeta,m=S.month,y=S.year,days=S.days;
+warnings.innerHTML=S.warn.length?`<div class="alert warn"><b>Hinweise:</b><br>${S.warn.map(x=>'· '+x).join('<br>')}</div>`:`<div class="alert ok">Plan erstellt. Keine Pflichtlücken und keine Soll-Überschreitung.</div>`;
+
+let h='<thead><tr><th class="sticky">Person</th>';
+for(let d=1;d<=days;d++)h+=`<th>${DOW[dow(d,y,m)]}<br>${d}</th>`;
+h+='<th>24h</th><th>WE</th><th>Max/Woche</th></tr></thead><tbody>';
+
+for(const p of staff){
+ h+=`<tr><td class="person">${p.name}<br><span class="small">${FACH[p.fach]}</span></td>`;
+ for(let d=1;d<=days;d++){
+  let txt='',cls='';
+  for(const duty of MAIN)if(lastPlan[d][duty]===p.id){txt=duty==='int'?'INT':duty==='zna1'?'ZNA1':'ZNA2';cls='p-'+duty}
+  if(!txt&&S.fnd[p.id].has(d)){txt='FND';cls='p-fnd'}
+  const w=getWish(p.id,y,m,d);
+  if(!txt&&(w==='urlaub'||w==='fortbildung'||w==='elternzeit')){txt=w==='urlaub'?'U':w==='fortbildung'?'FB':'EZ';cls='p-block'}
+  if(!txt&&isWeekend(d,y,m))cls='p-we';
+  if(w==='work'&&txt)cls+=' p-wish';
+  h+=`<td class="${cls}">${txt}</td>`;
+ }
+ h+=`<td><b>${S.ass[p.id].length}/${p.soll}</b></td><td><b>${S.wep[p.id].toFixed(1)}</b></td></tr>`;
+}
+h+='</tbody>';planTbl.innerHTML=h;
+
+let dv='';
+for(let d=1;d<=days;d++){
+ dv+=`<div class="staff"><div class="avatar">${d}</div><div class="grow"><b>${DOW[dow(d,y,m)]}, ${d}. ${MONTHS[m]}</b><br>
+ <span class="badge d-int" onclick="openEdit(${d},'int')" style="cursor:pointer">INT ${personBadge(lastPlan[d].int)} ✎</span>
+ <span class="badge d-zna1" onclick="openEdit(${d},'zna1')" style="cursor:pointer">ZNA1 ${personBadge(lastPlan[d].zna1)} ✎</span>
+ <span class="badge d-zna2" onclick="openEdit(${d},'zna2')" style="cursor:pointer">ZNA2 ${personBadge(lastPlan[d].zna2)} ✎</span>
+ </div></div>`;
+}
+dayView.innerHTML=dv + renderTakeoverSuggestions();
+renderStats();
+}
+
+
+function dutyCountByType(pid,type){
+ if(!lastMeta)return 0;
+ return lastMeta.ass[pid].filter(x=>x.duty===type).length;
+}
+function maxWeekForPerson(pid){
+ if(!lastMeta)return 0;
+ const m={};
+ (lastMeta.ass[pid]||[]).forEach(x=>{const k=weekKey(x.day,lastMeta.year,lastMeta.month);m[k]=(m[k]||0)+1});
+ return Math.max(0,...Object.values(m));
+}
+function renderStats(){
+ if(!lastMeta||!lastPlan){statView.innerHTML='<p class="small">Noch kein Plan.</p>';return}
+ let rows=staff.map(p=>{
+   const ist=lastMeta.ass[p.id].length;
+   const diff=ist-p.soll;
+   const cls=diff===0?'oknum':diff>0?'over':'under';
+   return {p,ist,diff,cls,we:lastMeta.wep[p.id]||0,
+     int:dutyCountByType(p.id,'int'),
+     zna1:dutyCountByType(p.id,'zna1'),
+     zna2:dutyCountByType(p.id,'zna2')
+   }
+ }).sort((a,b)=>(b.diff-a.diff)||b.ist-a.ist);
+ let h='<div class="wrap"><table class="statTable"><thead><tr><th>Name</th><th>Fach</th><th>Ist/Soll</th><th>Diff</th><th>INT</th><th>ZNA1</th><th>ZNA2</th><th>WE</th><th>Max/Woche</th></tr></thead><tbody>';
+ for(const r of rows){
+  h+=`<tr><td>${personBadge(r.p.id)}</td><td><span class="badge f-${r.p.fach}">${FACH[r.p.fach]}</span></td><td><span class="${r.cls}">${r.ist}/${r.p.soll}</span></td><td><span class="${r.cls}">${r.diff>0?'+'+r.diff:r.diff}</span></td><td>${r.int}</td><td>${r.zna1}</td><td>${r.zna2}</td><td>${r.we.toFixed(1)}</td><td>${maxWeekForPerson(r.p.id)}</td></tr>`;
+ }
+ h+='</tbody></table></div>';
+ h+='<div class="alert info" style="margin-top:10px">Tipp: In der Tagesübersicht auf INT/ZNA1/ZNA2 tippen, um einen Dienst manuell zu ändern. Das Programm zeigt vorher Regelkonflikte an.</div>';
+ statView.innerHTML=h;
+}
+function openEdit(day,duty){
+ if(!lastPlan||!lastMeta)return;
+ currentEdit={day,duty,old:lastPlan[day][duty]};
+ editTitle.textContent=`${DOW[dow(day,lastMeta.year,lastMeta.month)]}, ${day}. ${MONTHS[lastMeta.month]} – ${DUTY[duty]} aktuell: ${pname(currentEdit.old)}`;
+ const y=lastMeta.year,m=lastMeta.month;
+ const options=['<option value="">UNBESETZT</option>'].concat(staff.filter(p=>p.types.includes(duty)).map(p=>`<option value="${p.id}">${p.name} · ${FACH[p.fach]} · Ist ${lastMeta.ass[p.id].length}/${p.soll}</option>`));
+ editPerson.innerHTML=options.join('');
+ editPerson.value=currentEdit.old&&currentEdit.old!=='UNBESETZT'?currentEdit.old:'';
+ editPerson.onchange=checkEdit;
+ checkEdit();
+ editModal.classList.remove('hidden');
+}
+function closeEdit(){editModal.classList.add('hidden');currentEdit=null}
+function checkEdit(){
+ if(!currentEdit)return;
+ const val=editPerson.value;
+ if(!val){editCheck.className='alert warn';editCheck.innerHTML='Dieser Dienst wird auf UNBESETZT gesetzt.';return}
+ const pid=+val,p=staff.find(x=>x.id===pid),d=currentEdit.day,duty=currentEdit.duty,y=lastMeta.year,m=lastMeta.month;
+ const issues=[];
+ if(!p.types.includes(duty))issues.push('Diensttyp nicht erlaubt.');
+ if(blocked(pid,y,m,d))issues.push('Freiwunsch/Urlaub/Fortbildung/Elternzeit an diesem Tag.');
+ if(lastMeta.fnd[pid]&&lastMeta.fnd[pid].has(d))issues.push('FND nach vorherigem Dienst.');
+ if(lastMeta.ass[pid]&&lastMeta.ass[pid].some(x=>x.day===d && !(pid===currentEdit.old&&x.duty===duty)))issues.push('Bereits ein Dienst am selben Tag.');
+ if(lastMeta.ass[pid]&&lastMeta.ass[pid].some(x=>Math.abs(x.day-d)<=2 && !(pid===currentEdit.old&&x.day===d&&x.duty===duty)))issues.push('Dienst liegt innerhalb des 3-Tage-Abstands.');
+ if(true){
+   for(const other of MAIN){
+    if(other===duty)continue;
+    const opid=lastPlan[d][other];
+    if(opid&&opid!=='UNBESETZT'){
+      const op=staff.find(x=>x.id===opid);
+      if(op&&op.fach===p.fach)issues.push('Fachbereich doppelt am selben Tag (So–Do-Regel).');
+    }
+   }
+ }
+ const newIst=lastMeta.ass[pid].length + (pid===currentEdit.old?0:1);
+ if(newIst>p.soll)issues.push(`Über Soll: danach ${newIst}/${p.soll}.`);
+ if(issues.length){
+  editCheck.className='alert warn';
+  editCheck.innerHTML='<b>Warnung:</b><br>'+issues.map(x=>'· '+x).join('<br>')+'<br><br>Manuelle Übernahme ist trotzdem möglich.';
+ }else{
+  editCheck.className='alert ok';
+  editCheck.innerHTML='Keine offensichtlichen Regelkonflikte.';
+ }
+}
+function rebuildMetaAfterManual(){
+ const y=lastMeta.year,m=lastMeta.month,days=lastMeta.days,hol=lastMeta.hol||[];
+ const S=initState(days);
+ S.plan=lastPlan;
+ for(let d=1;d<=days;d++){
+  for(const duty of MAIN){
+   const pid=lastPlan[d][duty];
+   if(pid&&pid!=='UNBESETZT'){
+    S.ass[pid].push({day:d,duty});
+    S.wep[pid]+=weWeight(d,y,m);
+   }
+  }
+ }
+ for(const p of staff){
+  S.ass[p.id].forEach(x=>{if(x.day+1<=days)S.fnd[p.id].add(x.day+1)});
+ }
+ S.warn=lastMeta.warn||[];
+ S.reason=lastMeta.reason||[];
+ lastMeta={...S,month:m,year:y,days,hol};
+}
+function applyEdit(){
+ if(!currentEdit)return;
+ const val=editPerson.value?+editPerson.value:'UNBESETZT';
+ lastPlan[currentEdit.day][currentEdit.duty]=val;
+ rebuildMetaAfterManual();
+ renderPlan();
+ closeEdit();
+ toastMsg('Dienst geändert');
+}
+
+/* Saved/Export */
+function saveCurrentPlan(){if(!lastPlan)return toastMsg('Kein Plan vorhanden',true);const k=`${lastMeta.year}_${lastMeta.month}`;savedPlans[k]={plan:lastPlan,meta:{month:lastMeta.month,year:lastMeta.year,days:lastMeta.days},savedAt:new Date().toISOString()};save();toastMsg('Plan gespeichert')}
+
+function planDutyCountForPerson(sp,pid){
+ if(!sp||!sp.plan)return 0;
+ let cnt=0;
+ const plan=sp.plan, days=(sp.meta&&sp.meta.days)||31;
+ for(let d=1;d<=days;d++){
+  if(!plan[d])continue;
+  for(const duty of MAIN){
+   if(plan[d][duty]===pid)cnt++;
+  }
+ }
+ return cnt;
+}
+function nextMonthKey(y,m,offset){
+ const dt=new Date(y,m+offset,1);
+ return {y:dt.getFullYear(),m:dt.getMonth(),key:`${dt.getFullYear()}_${dt.getMonth()}`,label:`${MONTHS[dt.getMonth()]} ${dt.getFullYear()}`};
+}
+function renderThreeMonthStats(){
+ const sm=+statStartMonth.value, sy=+statStartYear.value;
+ const months=[nextMonthKey(sy,sm,0),nextMonthKey(sy,sm,1),nextMonthKey(sy,sm,2)];
+ let h='<div class="wrap" style="margin-top:10px"><table class="statTable"><thead><tr><th>Name</th><th>Fach</th>';
+ months.forEach(x=>h+=`<th>${x.label}</th>`);
+ h+='<th>Summe 3 Monate</th><th>Status</th></tr></thead><tbody>';
+ for(const p of staff){
+  const vals=months.map(x=>planDutyCountForPerson(savedPlans[x.key],p.id));
+  const sum=vals.reduce((a,b)=>a+b,0);
+  const status=sum>13?'<span class="over">Über 13 → Folgemonat entlasten</span>':sum>=12?'<span class="over">hoch</span>':'<span class="oknum">OK</span>';
+  h+=`<tr><td>${personBadge(p.id)}</td><td><span class="badge f-${p.fach}">${FACH[p.fach]}</span></td>${vals.map(v=>`<td>${v}</td>`).join('')}<td><b>${sum}/13</b></td><td>${status}</td></tr>`;
+ }
+ h+='</tbody></table></div>';
+ h+='<p class="small" style="margin-top:8px">Hinweis: Es werden nur gespeicherte Pläne aus dem Archiv gezählt. Nach Planerstellung bitte immer „Plan speichern“ drücken.</p>';
+ threeMonthStats.innerHTML=h;
+}
+
+function exportJSON(){const data={version:'dp3',exportedAt:new Date().toISOString(),staff,wishes,notes,savedPlans,settings};const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));a.download='dienstplan_backup.json';a.click()}
+function importJSON(ev){const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);staff=d.staff||[];wishes=d.wishes||{};notes=d.notes||{};savedPlans=d.savedPlans||{};settings=d.settings||{};save();renderAll();toastMsg('Import erfolgreich')}catch(e){toastMsg('Import fehlgeschlagen',true)}};r.readAsText(f)}
+function changeAdminPw(){
+ const current=settings.adminPw||ADMIN_DEFAULT;
+ if(!oldAdminPw.value)return toastMsg('Aktuelles Passwort eingeben',true);
+ if(oldAdminPw.value!==current)return toastMsg('Aktuelles Passwort ist falsch',true);
+ if(!newAdminPw.value||newAdminPw.value.length<4)return toastMsg('Neues Passwort mind. 4 Zeichen',true);
+ if(newAdminPw.value!==newAdminPw2.value)return toastMsg('Neue Passwörter stimmen nicht überein',true);
+ settings.adminPw=newAdminPw.value;
+ oldAdminPw.value='';newAdminPw.value='';newAdminPw2.value='';
+ save();
+ toastMsg('Admin-Passwort geändert');
+}
+
+load();initMonths();renderAll();uiLogin();
+
+/* ═════════════ v8.0 QUOTA-ROUND SOLVER – overrides previous generate ═════════════ */
+function v8HasSameFach(plan,p,day,duty){
+  if(!p)return false;
+  for(const od of MAIN){
+    if(od===duty)continue;
+    const oid=plan[day]&&plan[day][od];
+    if(!oid || oid==='UNBESETZT')continue;
+    const op=staff.find(x=>x.id===oid);
+    if(op && op.fach===p.fach)return true;
+  }
+  return false;
+}
+function v8CanPlace(S,p,slot,y,m,hol,relax3=false){
+  const d=slot.d, duty=slot.duty;
+  if(!p || p.name==='Belal')return false;
+  if(!p.types.includes(duty))return false;
+  if(S.plan[d][duty])return false;
+  if(S.ass[p.id].length>=p.soll)return false;
+  if(blocked(p.id,y,m,d))return false;
+  if(S.fnd[p.id].has(d))return false;
+  if(S.ass[p.id].some(x=>x.day===d))return false;
+  if(v8HasSameFach(S.plan,p,d,duty))return false;
+  if(!weekRuleOK(S,p.id,d,y,m))return false;
+  if(!canSpecial(p,d,y,m,true))return false;
+  if(!relax3 && same3Window(S,p.id,d))return false;
+  return true;
+}
+function v8Place(S,p,slot,y,m,note=''){
+  const d=slot.d, duty=slot.duty;
+  S.plan[d][duty]=p.id;
+  S.ass[p.id].push({day:d,duty});
+  S.wep[p.id]+=weWeight(d,y,m);
+  const days=Object.keys(S.plan).length;
+  if(d+1<=days)S.fnd[p.id].add(d+1);
+  if(note)S.reason.push(`${d}. ${MONTHS[m]} ${DUTY[duty]} → ${p.name} (${note})`);
+}
+function v8OpenSlots(S,days,y,m,hol){
+  const arr=[];
+  for(let d=1;d<=days;d++){
+    for(const duty of MAIN){
+      if(!S.plan[d][duty]){
+        let possible=0;
+        for(const p of staff){
+          if(p.name==='Belal'||p.soll<=0)continue;
+          if(p.types.includes(duty) && !blocked(p.id,y,m,d) && canSpecial(p,d,y,m,true))possible++;
+        }
+        arr.push({d,duty,scarcity:possible,we:isWeekend(d,y,m)?1:0});
+      }
+    }
+  }
+  return arr;
+}
+function v8PersonPriority(p,S,y,m){
+  const done=S.ass[p.id].length;
+  const ratio=p.soll>0 ? done/p.soll : 9;
+  let s=0;
+  s += constrainedLevel(p,y,m)*5;
+  if(typeof limitedWishPriority==='function' && limitedWishPriority(p))s+=500;
+  if((p.types||[]).length===1)s+=250;
+  if(p.soll<=2)s+=200;
+  s -= ratio*300;
+  if(done===0)s+=400;
+  return s+Math.random();
+}
+function v8SlotScoreForPerson(S,p,slot,y,m,hol,relax3=false){
+  if(!v8CanPlace(S,p,slot,y,m,hol,relax3))return -1e9;
+  const d=slot.d,duty=slot.duty;
+  let s=0;
+  const w=getWish(p.id,y,m,d);
+  const done=S.ass[p.id].length;
+  const missing=p.soll-done;
+  s += missing*250;
+  if(done===0)s+=500;
+  if(w==='work')s+=700;
+  if(w==='work' && typeof limitedWishPriority==='function' && limitedWishPriority(p))s+=900;
+  s += constrainedLevel(p,y,m)*3;
+  s += (10-(slot.scarcity||5))*80;
+  if(isWeekend(d,y,m))s -= (S.wep[p.id]||0)*180;
+  if(duty==='int'&&p.note.includes('Intensiv primär'))s+=100;
+  if(duty==='zna1'&&p.note.includes('nur ZNA1'))s+=150;
+  if(duty==='zna2'&&p.note.includes('nur ZNA2'))s+=150;
+  if(duty==='zna1'&&p.note.includes('ZNA1 möglich'))s+=50;
+  if(p.name==='Hamdar'){
+    const i=S.ass[p.id].filter(x=>x.duty==='int').length;
+    const z=S.ass[p.id].filter(x=>x.duty==='zna1').length;
+    if(duty==='int'&&i<2)s+=80;
+    if(duty==='zna1'&&z<2)s+=80;
+  }
+  if(relax3)s-=450;
+  s += Math.random()*50;
+  return s;
+}
+function v8AssignOneForPerson(S,p,days,y,m,hol,relax3=false){
+  let best=null;
+  for(const slot of v8OpenSlots(S,days,y,m,hol)){
+    const sc=v8SlotScoreForPerson(S,p,slot,y,m,hol,relax3);
+    if(sc>-1e8 && (!best || sc>best.sc))best={slot,sc};
+  }
+  if(best){
+    v8Place(S,p,best.slot,y,m,relax3?'Quota-Runde, 3-Tage gelockert':'Quota-Runde');
+    return true;
+  }
+  return false;
+}
+function v8FillRemaining(S,days,y,m,hol,relax3=false){
+  let changed=true,guard=0;
+  while(changed && guard++<200){
+    changed=false;
+    const slots=v8OpenSlots(S,days,y,m,hol).sort((a,b)=>(a.scarcity-b.scarcity)||(b.we-a.we)||a.d-b.d);
+    for(const slot of slots){
+      let best=null;
+      for(const p of staff){
+        if(p.soll<=0||p.name==='Belal')continue;
+        const sc=v8SlotScoreForPerson(S,p,slot,y,m,hol,relax3);
+        if(sc>-1e8 && (!best||sc>best.sc))best={p,sc};
+      }
+      if(best){
+        v8Place(S,best.p,slot,y,m,relax3?'Restfüllung, 3-Tage gelockert':'Restfüllung');
+        changed=true;
+      }
+    }
+  }
+}
+function v8ImproveUnderfilled(S,days,y,m,hol){
+  for(let pass=0;pass<4;pass++){
+    const under=[...staff].filter(p=>p.soll>0&&p.name!=='Belal'&&S.ass[p.id].length<p.soll)
+      .sort((a,b)=>(S.ass[a.id].length/a.soll)-(S.ass[b.id].length/b.soll));
+    let changed=false;
+    for(const p of under){
+      if(v8AssignOneForPerson(S,p,days,y,m,hol,pass>=2)){
+        changed=true; break;
+      }
+    }
+    if(!changed)break;
+  }
+}
+function v8Evaluate(S,days,y,m){
+  let pen=0;
+  for(let d=1;d<=days;d++)for(const duty of MAIN)if(!S.plan[d][duty])pen+=100000;
+  for(const p of staff){
+    if(p.soll<=0||p.name==='Belal')continue;
+    const ist=S.ass[p.id].length;
+    const diff=p.soll-ist;
+    if(ist===0)pen+=60000;
+    if(diff>0)pen+=diff*8000;
+    if(ist>p.soll)pen+=(ist-p.soll)*100000;
+    const weeks={};
+    S.ass[p.id].forEach(x=>{const k=weekKey(x.day,y,m);weeks[k]=(weeks[k]||0)+1});
+    Object.values(weeks).forEach(n=>{if(n>2)pen+=(n-2)*100000});
+  }
+  return pen;
+}
+function v8BuildPlan(days,y,m,hol){
+  let S=initState(days);
+
+  const maxSoll=Math.max(...staff.map(p=>p.soll||0));
+  for(let round=1;round<=maxSoll;round++){
+    let persons=[...staff].filter(p=>p.soll>=round && p.name!=='Belal')
+      .sort((a,b)=>v8PersonPriority(b,S,y,m)-v8PersonPriority(a,S,y,m));
+    for(const p of persons){
+      if(S.ass[p.id].length<round){
+        v8AssignOneForPerson(S,p,days,y,m,hol,false);
+      }
+    }
+  }
+
+  v8FillRemaining(S,days,y,m,hol,false);
+  v8ImproveUnderfilled(S,days,y,m,hol);
+  v8FillRemaining(S,days,y,m,hol,true);
+
+  return S;
+}
+function generate(){
+ const m=+pMonth.value,y=+pYear.value,days=new Date(y,m+1,0).getDate();
+ const hol=(holidays.value||'').split(',').map(x=>+x.trim()).filter(Boolean);
+ const tries=+(document.getElementById('solverTries')?solverTries.value:250);
+
+ let best=null,bestPen=Infinity;
+ for(let i=0;i<tries;i++){
+   const S=v8BuildPlan(days,y,m,hol);
+   const pen=v8Evaluate(S,days,y,m);
+   if(pen<bestPen){best=S;bestPen=pen;}
+   if(pen<1000 && i>30)break;
+ }
+ const S=best;
+
+ for(let d=1;d<=days;d++){
+   for(const duty of MAIN){
+     if(!S.plan[d][duty]){
+       S.plan[d][duty]='UNBESETZT';
+       S.warn.push(`${d}. ${MONTHS[m]}: ${DUTY[duty]} unbesetzt.`);
+     }
+   }
+ }
+
+ for(let d=1;d<=days;d++){
+   const seen={};
+   for(const duty of MAIN){
+     const pid=S.plan[d][duty];
+     if(!pid||pid==='UNBESETZT')continue;
+     const p=staff.find(x=>x.id===pid);
+     if(!p)continue;
+     if(seen[p.fach])S.warn.unshift(`ROTE LINIE: ${d}. ${MONTHS[m]} Fachbereich ${FACH[p.fach]} doppelt (${seen[p.fach]} + ${p.name}).`);
+     seen[p.fach]=p.name;
+   }
+ }
+ for(const p of staff){
+   const ist=S.ass[p.id].length;
+   if(p.soll>0&&p.name!=='Belal'&&ist===0)S.warn.push(`${p.name}: 0 Dienste trotz Soll ${p.soll}.`);
+   if(ist<p.soll&&p.name!=='Belal')S.warn.push(`${p.name}: unter Soll (${ist}/${p.soll}).`);
+   if(ist>p.soll)S.warn.push(`${p.name}: über Soll (${ist}/${p.soll}) – sollte nicht automatisch passieren.`);
+   const weeks={};
+   S.ass[p.id].forEach(x=>{const k=weekKey(x.day,y,m);weeks[k]=(weeks[k]||0)+1});
+   Object.entries(weeks).forEach(([wk,n])=>{if(n>2)S.warn.push(`${p.name}: ${n} Dienste in ${wk}.`)});
+ }
+ S.warn.unshift(`Quota-Round Solver v8.4: ${tries} Versuche, bester Penalty-Wert ${Math.round(bestPen)}.`);
+ lastPlan=S.plan;lastMeta={...S,month:m,year:y,days,hol};renderPlan();toastMsg('Plan erstellt');
+}
+
+
+/* ═════════════ v8.1 WEEKEND/FREITAG FACHREGEL PATCH – overrides v8 helpers/generate ═════════════ */
+function v81FachDopplungErlaubt(day,y,m){
+  const w=dow(day,y,m);
+  return w===5 || w===6; // Freitag oder Samstag
+}
+function v8HasSameFach(plan,p,day,duty){
+  if(!p)return false;
+  const y=+(document.getElementById('pYear')?pYear.value:new Date().getFullYear());
+  const m=+(document.getElementById('pMonth')?pMonth.value:new Date().getMonth());
+  if(v81FachDopplungErlaubt(day,y,m))return false;
+  for(const od of MAIN){
+    if(od===duty)continue;
+    const oid=plan[day]&&plan[day][od];
+    if(!oid || oid==='UNBESETZT')continue;
+    const op=staff.find(x=>x.id===oid);
+    if(op && op.fach===p.fach)return true;
+  }
+  return false;
+}
+function v81OpenSlotUrgency(slot,y,m){
+  let u=0;
+  if(isWeekend(slot.d,y,m))u+=350;
+  if(dow(slot.d,y,m)===5 || dow(slot.d,y,m)===6)u+=500; // Freitag/Samstag aktiv nutzen
+  u += (10-(slot.scarcity||5))*90;
+  return u;
+}
+function v8SlotScoreForPerson(S,p,slot,y,m,hol,relax3=false){
+  if(!v8CanPlace(S,p,slot,y,m,hol,relax3))return -1e9;
+  const d=slot.d,duty=slot.duty;
+  let s=0;
+  const w=getWish(p.id,y,m,d);
+  const done=S.ass[p.id].length;
+  const missing=p.soll-done;
+
+  s += missing*280;
+  if(done===0)s+=600;
+  if(w==='work')s+=800;
+  if(w==='work' && typeof limitedWishPriority==='function' && limitedWishPriority(p))s+=950;
+  s += constrainedLevel(p,y,m)*3;
+  s += v81OpenSlotUrgency(slot,y,m);
+
+  if(isWeekend(d,y,m))s -= (S.wep[p.id]||0)*120;
+  if(duty==='int'&&p.note.includes('Intensiv primär'))s+=120;
+  if(duty==='zna1'&&p.note.includes('nur ZNA1'))s+=170;
+  if(duty==='zna2'&&p.note.includes('nur ZNA2'))s+=170;
+  if(duty==='zna1'&&p.note.includes('ZNA1 möglich'))s+=60;
+
+  if(p.name==='Hamdar'){
+    const i=S.ass[p.id].filter(x=>x.duty==='int').length;
+    const z=S.ass[p.id].filter(x=>x.duty==='zna1').length;
+    if(duty==='int'&&i<2)s+=80;
+    if(duty==='zna1'&&z<2)s+=80;
+  }
+
+  if(relax3)s-=350;
+  s += Math.random()*70;
+  return s;
+}
+function generate(){
+ const m=+pMonth.value,y=+pYear.value,days=new Date(y,m+1,0).getDate();
+ const hol=(holidays.value||'').split(',').map(x=>+x.trim()).filter(Boolean);
+ const tries=+(document.getElementById('solverTries')?solverTries.value:250);
+
+ let best=null,bestPen=Infinity;
+ for(let i=0;i<tries;i++){
+   const S=v8BuildPlan(days,y,m,hol);
+   const pen=v8Evaluate(S,days,y,m);
+   if(pen<bestPen){best=S;bestPen=pen;}
+   if(pen<1000 && i>30)break;
+ }
+ const S=best;
+
+ for(let d=1;d<=days;d++){
+   for(const duty of MAIN){
+     if(!S.plan[d][duty]){
+       S.plan[d][duty]='UNBESETZT';
+       S.warn.push(`${d}. ${MONTHS[m]}: ${DUTY[duty]} unbesetzt.`);
+     }
+   }
+ }
+
+ for(let d=1;d<=days;d++){
+   const seen={};
+   for(const duty of MAIN){
+     const pid=S.plan[d][duty];
+     if(!pid||pid==='UNBESETZT')continue;
+     const p=staff.find(x=>x.id===pid);
+     if(!p)continue;
+     if(seen[p.fach] && !v81FachDopplungErlaubt(d,y,m)){
+       S.warn.unshift(`ROTE LINIE: ${d}. ${MONTHS[m]} Fachbereich ${FACH[p.fach]} doppelt (${seen[p.fach]} + ${p.name}).`);
+     }else if(seen[p.fach] && v81FachDopplungErlaubt(d,y,m)){
+       S.warn.push(`${d}. ${MONTHS[m]}: Fachbereich ${FACH[p.fach]} doppelt am Freitag/Samstag bewusst erlaubt (${seen[p.fach]} + ${p.name}).`);
+     }
+     seen[p.fach]=p.name;
+   }
+ }
+ for(const p of staff){
+   const ist=S.ass[p.id].length;
+   if(p.soll>0&&p.name!=='Belal'&&ist===0)S.warn.push(`${p.name}: 0 Dienste trotz Soll ${p.soll}.`);
+   if(ist<p.soll&&p.name!=='Belal')S.warn.push(`${p.name}: unter Soll (${ist}/${p.soll}).`);
+   if(ist>p.soll)S.warn.push(`${p.name}: über Soll (${ist}/${p.soll}) – sollte nicht automatisch passieren.`);
+   const weeks={};
+   S.ass[p.id].forEach(x=>{const k=weekKey(x.day,y,m);weeks[k]=(weeks[k]||0)+1});
+   Object.entries(weeks).forEach(([wk,n])=>{if(n>2)S.warn.push(`${p.name}: ${n} Dienste in ${wk}.`)});
+ }
+ S.warn.unshift(`Quota-Round Solver v8.4: ${tries} Versuche, bester Penalty-Wert ${Math.round(bestPen)}. Fachbereich-Dopplung Fr/Sa erlaubt.`);
+ lastPlan=S.plan;lastMeta={...S,month:m,year:y,days,hol};renderPlan();toastMsg('Plan erstellt');
+}
+
+
+/* ═════════════ v8.2 HUMAN WEEKLOAD PATCH – overrides v8/v8.1 helpers/generate ═════════════ */
+function v82IsGB(p){return p && (p.name==='Ghalayini'||p.name==='Badakschani');}
+function v82NormalTarget(p){return v82IsGB(p)?1:(p.soll||0);}
+function v82WeekPatternOK(S,pid,d,y,m){
+  if(isWeekend(d,y,m)){
+    return !hasWeekendDutyThisWeek(S,pid,d,y,m);
+  }else{
+    return !hasWeekdayDutyThisWeek(S,pid,d,y,m);
+  }
+}
+function v8CanPlace(S,p,slot,y,m,hol,relax3=false,allowReserve=false){
+  const d=slot.d, duty=slot.duty;
+  if(!p || p.name==='Belal')return false;
+  if(!p.types.includes(duty))return false;
+  if(S.plan[d][duty])return false;
+
+  const cap=allowReserve ? (p.soll||0) : v82NormalTarget(p);
+  if(S.ass[p.id].length>=cap)return false;
+
+  if(blocked(p.id,y,m,d))return false;
+  if(S.fnd[p.id].has(d))return false;
+  if(S.ass[p.id].some(x=>x.day===d))return false;
+  if(v8HasSameFach(S.plan,p,d,duty))return false;
+
+  // harte Wochenlogik: max. 1 Werktag + 1 Wochenende pro Woche
+  if(!weekRuleOK(S,p.id,d,y,m))return false;
+  if(!v82WeekPatternOK(S,p.id,d,y,m))return false;
+
+  if(!canSpecial(p,d,y,m,true))return false;
+  if(!relax3 && same3Window(S,p.id,d))return false;
+  return true;
+}
+function v8SlotScoreForPerson(S,p,slot,y,m,hol,relax3=false,allowReserve=false){
+  if(!v8CanPlace(S,p,slot,y,m,hol,relax3,allowReserve))return -1e9;
+  const d=slot.d,duty=slot.duty;
+  let s=0;
+  const w=getWish(p.id,y,m,d);
+  const done=S.ass[p.id].length;
+  const target=Math.max(1,v82NormalTarget(p));
+  const missing=target-done;
+
+  s += missing*340;
+  if(done===0)s+=750;
+  if(w==='work')s+=850;
+  if(w==='work' && typeof limitedWishPriority==='function' && limitedWishPriority(p))s+=950;
+  s += constrainedLevel(p,y,m)*3;
+  s += v81OpenSlotUrgency(slot,y,m);
+
+  if(isWeekend(d,y,m))s -= (S.wep[p.id]||0)*160;
+
+  if(duty==='int'&&p.note.includes('Intensiv primär'))s+=120;
+  if(duty==='zna1'&&p.note.includes('nur ZNA1'))s+=180;
+  if(duty==='zna2'&&p.note.includes('nur ZNA2'))s+=180;
+  if(duty==='zna1'&&p.note.includes('ZNA1 möglich'))s+=60;
+
+  if(p.name==='Hamdar'){
+    const i=S.ass[p.id].filter(x=>x.duty==='int').length;
+    const z=S.ass[p.id].filter(x=>x.duty==='zna1').length;
+    if(duty==='int'&&i<2)s+=80;
+    if(duty==='zna1'&&z<2)s+=80;
+  }
+
+  // Ghalayini/Badakschani second duty only as late reserve, heavily penalized
+  if(v82IsGB(p) && done>=1){
+    if(!allowReserve)return -1e9;
+    s-=2500;
+  }
+
+  if(relax3)s-=350;
+  s += Math.random()*70;
+  return s;
+}
+function v8AssignOneForPerson(S,p,days,y,m,hol,relax3=false,allowReserve=false){
+  let best=null;
+  for(const slot of v8OpenSlots(S,days,y,m,hol)){
+    const sc=v8SlotScoreForPerson(S,p,slot,y,m,hol,relax3,allowReserve);
+    if(sc>-1e8 && (!best || sc>best.sc))best={slot,sc};
+  }
+  if(best){
+    v8Place(S,p,best.slot,y,m,allowReserve?'Reserve-Runde':'Quota-Runde');
+    return true;
+  }
+  return false;
+}
+function v82FillRemaining(S,days,y,m,hol,relax3=false,allowReserve=false){
+  let changed=true,guard=0;
+  while(changed && guard++<200){
+    changed=false;
+    const slots=v8OpenSlots(S,days,y,m,hol).sort((a,b)=>(a.scarcity-b.scarcity)||(b.we-a.we)||a.d-b.d);
+    for(const slot of slots){
+      let best=null;
+      for(const p of staff){
+        if(p.soll<=0||p.name==='Belal')continue;
+        const sc=v8SlotScoreForPerson(S,p,slot,y,m,hol,relax3,allowReserve);
+        if(sc>-1e8 && (!best||sc>best.sc))best={p,sc};
+      }
+      if(best){
+        v8Place(S,best.p,slot,y,m,allowReserve?'Reserve-Restfüllung':'Restfüllung');
+        changed=true;
+      }
+    }
+  }
+}
+function v82ImproveUnderfilled(S,days,y,m,hol){
+  for(let pass=0;pass<5;pass++){
+    const under=[...staff].filter(p=>p.soll>0&&p.name!=='Belal'&&S.ass[p.id].length<v82NormalTarget(p))
+      .sort((a,b)=>(S.ass[a.id].length/Math.max(1,v82NormalTarget(a)))-(S.ass[b.id].length/Math.max(1,v82NormalTarget(b))));
+    let changed=false;
+    for(const p of under){
+      if(v8AssignOneForPerson(S,p,days,y,m,hol,pass>=2,false)){
+        changed=true; break;
+      }
+    }
+    if(!changed)break;
+  }
+}
+function v82ReserveFill(S,days,y,m,hol){
+  // only if open slots remain, allow second duty for Ghalayini/Badakschani or other remaining capacity
+  v82FillRemaining(S,days,y,m,hol,true,true);
+}
+function v8BuildPlan(days,y,m,hol){
+  let S=initState(days);
+
+  const maxTarget=Math.max(...staff.map(p=>v82NormalTarget(p)||0));
+  for(let round=1;round<=maxTarget;round++){
+    let persons=[...staff].filter(p=>v82NormalTarget(p)>=round && p.name!=='Belal')
+      .sort((a,b)=>v8PersonPriority(b,S,y,m)-v8PersonPriority(a,S,y,m));
+    for(const p of persons){
+      if(S.ass[p.id].length<round){
+        v8AssignOneForPerson(S,p,days,y,m,hol,false,false);
+      }
+    }
+  }
+
+  v82FillRemaining(S,days,y,m,hol,false,false);
+  v82ImproveUnderfilled(S,days,y,m,hol);
+  v82FillRemaining(S,days,y,m,hol,true,false);
+
+  // only at the end: reserve use, including 2nd duty for G/B if otherwise open
+  v82ReserveFill(S,days,y,m,hol);
+
+  return S;
+}
+function v8Evaluate(S,days,y,m){
+  let pen=0;
+  for(let d=1;d<=days;d++)for(const duty of MAIN)if(!S.plan[d][duty])pen+=100000;
+  for(const p of staff){
+    if(p.soll<=0||p.name==='Belal')continue;
+    const ist=S.ass[p.id].length;
+    const target=v82NormalTarget(p);
+    const diff=target-ist;
+    if(ist===0)pen+=60000;
+    if(diff>0)pen+=diff*10000;
+    if(ist>p.soll)pen+=(ist-p.soll)*100000;
+    if(v82IsGB(p)&&ist>1)pen+=12000; // allowed but not preferred
+
+    const weeks={};
+    S.ass[p.id].forEach(x=>{
+      const k=weekKey(x.day,y,m);
+      if(!weeks[k])weeks[k]={total:0,wd:0,we:0};
+      weeks[k].total++;
+      if(isWeekend(x.day,y,m))weeks[k].we++; else weeks[k].wd++;
+    });
+    Object.values(weeks).forEach(w=>{
+      if(w.total>2)pen+=(w.total-2)*100000;
+      if(w.wd>1)pen+=(w.wd-1)*100000;
+      if(w.we>1)pen+=(w.we-1)*100000;
+    });
+  }
+  return pen;
+}
+function generate(){
+ const m=+pMonth.value,y=+pYear.value,days=new Date(y,m+1,0).getDate();
+ const hol=(holidays.value||'').split(',').map(x=>+x.trim()).filter(Boolean);
+ const tries=+(document.getElementById('solverTries')?solverTries.value:250);
+
+ let best=null,bestPen=Infinity;
+ for(let i=0;i<tries;i++){
+   const S=v8BuildPlan(days,y,m,hol);
+   const pen=v8Evaluate(S,days,y,m);
+   if(pen<bestPen){best=S;bestPen=pen;}
+   if(pen<1000 && i>30)break;
+ }
+ const S=best;
+
+ for(let d=1;d<=days;d++){
+   for(const duty of MAIN){
+     if(!S.plan[d][duty]){
+       S.plan[d][duty]='UNBESETZT';
+       S.warn.push(`${d}. ${MONTHS[m]}: ${DUTY[duty]} unbesetzt.`);
+     }
+   }
+ }
+
+ for(let d=1;d<=days;d++){
+   const seen={};
+   for(const duty of MAIN){
+     const pid=S.plan[d][duty];
+     if(!pid||pid==='UNBESETZT')continue;
+     const p=staff.find(x=>x.id===pid);
+     if(!p)continue;
+     if(seen[p.fach] && !v81FachDopplungErlaubt(d,y,m)){
+       S.warn.unshift(`ROTE LINIE: ${d}. ${MONTHS[m]} Fachbereich ${FACH[p.fach]} doppelt (${seen[p.fach]} + ${p.name}).`);
+     }else if(seen[p.fach] && v81FachDopplungErlaubt(d,y,m)){
+       S.warn.push(`${d}. ${MONTHS[m]}: Fachbereich ${FACH[p.fach]} doppelt am Freitag/Samstag bewusst erlaubt (${seen[p.fach]} + ${p.name}).`);
+     }
+     seen[p.fach]=p.name;
+   }
+ }
+ for(const p of staff){
+   const ist=S.ass[p.id].length;
+   const target=v82NormalTarget(p);
+   if(p.soll>0&&p.name!=='Belal'&&ist===0)S.warn.push(`${p.name}: 0 Dienste trotz Ziel ${target}.`);
+   if(ist<target&&p.name!=='Belal')S.warn.push(`${p.name}: unter Ziel (${ist}/${target}).`);
+   if(ist>p.soll)S.warn.push(`${p.name}: über Soll (${ist}/${p.soll}) – sollte nicht automatisch passieren.`);
+   if(v82IsGB(p)&&ist>1)S.warn.push(`${p.name}: Reserve-Regel genutzt (${ist}/max. 2), Ziel eigentlich 1.`);
+   const weeks={};
+   S.ass[p.id].forEach(x=>{
+     const k=weekKey(x.day,y,m);
+     if(!weeks[k])weeks[k]={total:0,wd:0,we:0};
+     weeks[k].total++;
+     if(isWeekend(x.day,y,m))weeks[k].we++; else weeks[k].wd++;
+   });
+   Object.entries(weeks).forEach(([wk,w])=>{
+     if(w.total>2)S.warn.push(`${p.name}: ${w.total} Dienste in ${wk}.`);
+     if(w.wd>1)S.warn.push(`${p.name}: mehr als 1 Werktagsdienst in ${wk}.`);
+     if(w.we>1)S.warn.push(`${p.name}: mehr als 1 Wochenenddienst in ${wk}.`);
+   });
+ }
+ S.warn.unshift(`Quota-Round Solver v8.4: ${tries} Versuche, bester Penalty-Wert ${Math.round(bestPen)}. Wochenregel: max. 1 Werktag + 1 Wochenende.`);
+ lastPlan=S.plan;lastMeta={...S,month:m,year:y,days,hol};renderPlan();toastMsg('Plan erstellt');
+}
+
+
+/* ═════════════ v8.3 LIMITED-WISH PRIORITY PATCH – overrides v8.2 build/generate ═════════════ */
+function v83HardWishPersons(){
+  return ['Kanan','Arieskaite'];
+}
+function v83IsHardWishPerson(p){
+  return p && v83HardWishPersons().includes(p.name);
+}
+function v83PrefillExactWishes(S,days,y,m,hol){
+  const persons=[...staff].filter(p=>v83IsHardWishPerson(p)&&p.soll>0&&p.name!=='Belal')
+    .sort((a,b)=>constrainedLevel(b,y,m)-constrainedLevel(a,y,m));
+
+  for(const p of persons){
+    const wanted=[];
+    for(let d=1;d<=days;d++){
+      if(getWish(p.id,y,m,d)==='work'){
+        for(const duty of MAIN){
+          if(p.types.includes(duty)){
+            wanted.push({d,duty,score:v8SlotScoreForPerson(S,p,{d,duty,scarcity:1,we:isWeekend(d,y,m)?1:0},y,m,hol,false,false)});
+          }
+        }
+      }
+    }
+
+    wanted.sort((a,b)=>b.score-a.score || a.d-b.d);
+
+    for(const slot of wanted){
+      if(S.ass[p.id].length>=p.soll)break;
+      const sc=v8SlotScoreForPerson(S,p,slot,y,m,hol,false,false);
+      if(sc>-1e8){
+        v8Place(S,p,slot,y,m,'Priorität: begrenztes Profil + Wunschdienst');
+      }else{
+        S.warn.push(`${p.name}: Wunsch am ${slot.d}. ${MONTHS[m]} konnte nicht gesetzt werden (rote Linie/FND/Wochenregel/Freiwunsch).`);
+      }
+    }
+  }
+}
+function v83PersonPriority(p,S,y,m){
+  const done=S.ass[p.id].length;
+  const ratio=p.soll>0 ? done/p.soll : 9;
+  let s=0;
+
+  if(v83IsHardWishPerson(p))s+=1200;
+  s += constrainedLevel(p,y,m)*6;
+  if(typeof limitedWishPriority==='function' && limitedWishPriority(p))s+=650;
+  if((p.types||[]).length===1)s+=300;
+  if(p.soll<=3)s+=220;
+  s -= ratio*350;
+  if(done===0)s+=500;
+  return s+Math.random();
+}
+function v8BuildPlan(days,y,m,hol){
+  let S=initState(days);
+
+  /* Phase 0: Wünsche von wirklich begrenzten Profilen zuerst festsetzen */
+  v83PrefillExactWishes(S,days,y,m,hol);
+
+  const maxTarget=Math.max(...staff.map(p=>v82NormalTarget(p)||0));
+  for(let round=1;round<=maxTarget;round++){
+    let persons=[...staff].filter(p=>v82NormalTarget(p)>=round && p.name!=='Belal')
+      .sort((a,b)=>v83PersonPriority(b,S,y,m)-v83PersonPriority(a,S,y,m));
+    for(const p of persons){
+      if(S.ass[p.id].length<round){
+        v8AssignOneForPerson(S,p,days,y,m,hol,false,false);
+      }
+    }
+  }
+
+  v82FillRemaining(S,days,y,m,hol,false,false);
+  v82ImproveUnderfilled(S,days,y,m,hol);
+  v82FillRemaining(S,days,y,m,hol,true,false);
+
+  /* Reserve erst ganz am Ende */
+  v82ReserveFill(S,days,y,m,hol);
+
+  return S;
+}
+function generate(){
+ const m=+pMonth.value,y=+pYear.value,days=new Date(y,m+1,0).getDate();
+ const hol=(holidays.value||'').split(',').map(x=>+x.trim()).filter(Boolean);
+ const tries=+(document.getElementById('solverTries')?solverTries.value:250);
+
+ let best=null,bestPen=Infinity;
+ for(let i=0;i<tries;i++){
+   const S=v8BuildPlan(days,y,m,hol);
+   const pen=v8Evaluate(S,days,y,m);
+   if(pen<bestPen){best=S;bestPen=pen;}
+   if(pen<1000 && i>30)break;
+ }
+ const S=best;
+
+ for(let d=1;d<=days;d++){
+   for(const duty of MAIN){
+     if(!S.plan[d][duty]){
+       S.plan[d][duty]='UNBESETZT';
+       S.warn.push(`${d}. ${MONTHS[m]}: ${DUTY[duty]} unbesetzt.`);
+     }
+   }
+ }
+
+ for(let d=1;d<=days;d++){
+   const seen={};
+   for(const duty of MAIN){
+     const pid=S.plan[d][duty];
+     if(!pid||pid==='UNBESETZT')continue;
+     const p=staff.find(x=>x.id===pid);
+     if(!p)continue;
+     if(seen[p.fach] && !v81FachDopplungErlaubt(d,y,m)){
+       S.warn.unshift(`ROTE LINIE: ${d}. ${MONTHS[m]} Fachbereich ${FACH[p.fach]} doppelt (${seen[p.fach]} + ${p.name}).`);
+     }else if(seen[p.fach] && v81FachDopplungErlaubt(d,y,m)){
+       S.warn.push(`${d}. ${MONTHS[m]}: Fachbereich ${FACH[p.fach]} doppelt am Freitag/Samstag bewusst erlaubt (${seen[p.fach]} + ${p.name}).`);
+     }
+     seen[p.fach]=p.name;
+   }
+ }
+ for(const p of staff){
+   const ist=S.ass[p.id].length;
+   const target=v82NormalTarget(p);
+   if(p.soll>0&&p.name!=='Belal'&&ist===0)S.warn.push(`${p.name}: 0 Dienste trotz Ziel ${target}.`);
+   if(ist<target&&p.name!=='Belal')S.warn.push(`${p.name}: unter Ziel (${ist}/${target}).`);
+   if(ist>p.soll)S.warn.push(`${p.name}: über Soll (${ist}/${p.soll}) – sollte nicht automatisch passieren.`);
+   if(v82IsGB(p)&&ist>1)S.warn.push(`${p.name}: Reserve-Regel genutzt (${ist}/max. 2), Ziel eigentlich 1.`);
+   const weeks={};
+   S.ass[p.id].forEach(x=>{
+     const k=weekKey(x.day,y,m);
+     if(!weeks[k])weeks[k]={total:0,wd:0,we:0};
+     weeks[k].total++;
+     if(isWeekend(x.day,y,m))weeks[k].we++; else weeks[k].wd++;
+   });
+   Object.entries(weeks).forEach(([wk,w])=>{
+     if(w.total>2)S.warn.push(`${p.name}: ${w.total} Dienste in ${wk}.`);
+     if(w.wd>1)S.warn.push(`${p.name}: mehr als 1 Werktagsdienst in ${wk}.`);
+     if(w.we>1)S.warn.push(`${p.name}: mehr als 1 Wochenenddienst in ${wk}.`);
+   });
+ }
+ S.warn.unshift(`Quota-Round Solver v8.4: ${tries} Versuche, bester Penalty-Wert ${Math.round(bestPen)}. Kanan/Arieskaite-Wünsche zuerst gesetzt.`);
+ lastPlan=S.plan;lastMeta={...S,month:m,year:y,days,hol};renderPlan();toastMsg('Plan erstellt');
+}
+
+
+/* ═════════════ v8.4 SMART WISH LOGIC PATCH – overrides v8.3 wish/scoring/build/generate ═════════════ */
+function v84WishDays(pid,y,m){
+  const obj=wishes[`${pid}_${y}_${m}`]||{};
+  return Object.keys(obj).filter(d=>obj[d]==='work').map(x=>+x).sort((a,b)=>a-b);
+}
+function v84WishQuality(p,y,m){
+  const days=v84WishDays(p.id,y,m);
+  if(days.length===0)return {count:0,quality:'none',boost:0,exact:false};
+
+  // wenige konkrete Wünsche = realistisch
+  if(days.length<=2)return {count:days.length,quality:'excellent',boost:1200,exact:true};
+  if(days.length===3)return {count:days.length,quality:'good',boost:850,exact:true};
+
+  // 4-5 Wünsche = noch okay, aber nicht blind festsetzen
+  if(days.length<=5)return {count:days.length,quality:'medium',boost:450,exact:false};
+
+  // sehr breite Muster, z.B. jeder Donnerstag
+  return {count:days.length,quality:'broad',boost:120,exact:false};
+}
+function v84WishBoost(p,y,m,d){
+  if(getWish(p.id,y,m,d)!=='work')return 0;
+  const q=v84WishQuality(p,y,m);
+  let b=q.boost;
+  if(typeof limitedWishPriority==='function' && limitedWishPriority(p))b+=250;
+  if(v83IsHardWishPerson && v83IsHardWishPerson(p) && q.count<=3)b+=500;
+  return b;
+}
+function v83PrefillExactWishes(S,days,y,m,hol){
+  const persons=[...staff].filter(p=>v83IsHardWishPerson(p)&&p.soll>0&&p.name!=='Belal')
+    .sort((a,b)=>constrainedLevel(b,y,m)-constrainedLevel(a,y,m));
+
+  for(const p of persons){
+    const q=v84WishQuality(p,y,m);
+    if(!q.exact){
+      if(q.count>0)S.warn.push(`${p.name}: ${q.count} Wunschdienste angegeben – als breite Präferenz gewertet, nicht alle exakt fixiert.`);
+      continue;
+    }
+
+    const wanted=[];
+    for(const d of v84WishDays(p.id,y,m)){
+      for(const duty of MAIN){
+        if(p.types.includes(duty)){
+          wanted.push({d,duty,score:v8SlotScoreForPerson(S,p,{d,duty,scarcity:1,we:isWeekend(d,y,m)?1:0},y,m,hol,false,false)+q.boost});
+        }
+      }
+    }
+
+    wanted.sort((a,b)=>b.score-a.score || a.d-b.d);
+
+    for(const slot of wanted){
+      if(S.ass[p.id].length>=p.soll)break;
+      const sc=v8SlotScoreForPerson(S,p,slot,y,m,hol,false,false);
+      if(sc>-1e8){
+        v8Place(S,p,slot,y,m,'Priorität: realistischer Wunsch begrenztes Profil');
+      }else{
+        S.warn.push(`${p.name}: Wunsch am ${slot.d}. ${MONTHS[m]} konnte nicht gesetzt werden (rote Linie/FND/Wochenregel/Freiwunsch).`);
+      }
+    }
+  }
+}
+function v8SlotScoreForPerson(S,p,slot,y,m,hol,relax3=false,allowReserve=false){
+  if(!v8CanPlace(S,p,slot,y,m,hol,relax3,allowReserve))return -1e9;
+  const d=slot.d,duty=slot.duty;
+  let s=0;
+  const done=S.ass[p.id].length;
+  const target=Math.max(1,v82NormalTarget(p));
+  const missing=target-done;
+
+  s += missing*340;
+  if(done===0)s+=750;
+
+  // Smart Wunsch logic
+  s += v84WishBoost(p,y,m,d);
+
+  s += constrainedLevel(p,y,m)*3;
+  s += v81OpenSlotUrgency(slot,y,m);
+
+  if(isWeekend(d,y,m))s -= (S.wep[p.id]||0)*160;
+
+  if(duty==='int'&&p.note.includes('Intensiv primär'))s+=120;
+  if(duty==='zna1'&&p.note.includes('nur ZNA1'))s+=180;
+  if(duty==='zna2'&&p.note.includes('nur ZNA2'))s+=180;
+  if(duty==='zna1'&&p.note.includes('ZNA1 möglich'))s+=60;
+
+  if(p.name==='Hamdar'){
+    const i=S.ass[p.id].filter(x=>x.duty==='int').length;
+    const z=S.ass[p.id].filter(x=>x.duty==='zna1').length;
+    if(duty==='int'&&i<2)s+=80;
+    if(duty==='zna1'&&z<2)s+=80;
+  }
+
+  if(v82IsGB(p) && done>=1){
+    if(!allowReserve)return -1e9;
+    s-=2500;
+  }
+
+  if(relax3)s-=350;
+  s += Math.random()*70;
+  return s;
+}
+function v83PersonPriority(p,S,y,m){
+  const done=S.ass[p.id].length;
+  const ratio=p.soll>0 ? done/p.soll : 9;
+  let s=0;
+
+  const q=v84WishQuality(p,y,m);
+  if(v83IsHardWishPerson(p)&&q.count>0&&q.count<=3)s+=1600;
+  else if(v83IsHardWishPerson(p))s+=900;
+
+  s += q.boost*0.4;
+  s += constrainedLevel(p,y,m)*6;
+  if(typeof limitedWishPriority==='function' && limitedWishPriority(p))s+=650;
+  if((p.types||[]).length===1)s+=300;
+  if(p.soll<=3)s+=220;
+  s -= ratio*350;
+  if(done===0)s+=500;
+  return s+Math.random();
+}
+function generate(){
+ const m=+pMonth.value,y=+pYear.value,days=new Date(y,m+1,0).getDate();
+ const hol=(holidays.value||'').split(',').map(x=>+x.trim()).filter(Boolean);
+ const tries=+(document.getElementById('solverTries')?solverTries.value:250);
+
+ let best=null,bestPen=Infinity;
+ for(let i=0;i<tries;i++){
+   const S=v8BuildPlan(days,y,m,hol);
+   const pen=v8Evaluate(S,days,y,m);
+   if(pen<bestPen){best=S;bestPen=pen;}
+   if(pen<1000 && i>30)break;
+ }
+ const S=best;
+
+ for(let d=1;d<=days;d++){
+   for(const duty of MAIN){
+     if(!S.plan[d][duty]){
+       S.plan[d][duty]='UNBESETZT';
+       S.warn.push(`${d}. ${MONTHS[m]}: ${DUTY[duty]} unbesetzt.`);
+     }
+   }
+ }
+
+ // Wunsch quality report
+ for(const p of staff){
+   if(p.soll>0&&p.name!=='Belal'){
+     const q=v84WishQuality(p,y,m);
+     if(q.quality==='broad')S.warn.push(`${p.name}: sehr viele Wunschdienste (${q.count}) – nur als weiche Präferenz gewertet.`);
+     if(q.quality==='excellent'||q.quality==='good')S.warn.push(`${p.name}: realistische Wunschanzahl (${q.count}) – stark priorisiert.`);
+   }
+ }
+
+ for(let d=1;d<=days;d++){
+   const seen={};
+   for(const duty of MAIN){
+     const pid=S.plan[d][duty];
+     if(!pid||pid==='UNBESETZT')continue;
+     const p=staff.find(x=>x.id===pid);
+     if(!p)continue;
+     if(seen[p.fach] && !v81FachDopplungErlaubt(d,y,m)){
+       S.warn.unshift(`ROTE LINIE: ${d}. ${MONTHS[m]} Fachbereich ${FACH[p.fach]} doppelt (${seen[p.fach]} + ${p.name}).`);
+     }else if(seen[p.fach] && v81FachDopplungErlaubt(d,y,m)){
+       S.warn.push(`${d}. ${MONTHS[m]}: Fachbereich ${FACH[p.fach]} doppelt am Freitag/Samstag bewusst erlaubt (${seen[p.fach]} + ${p.name}).`);
+     }
+     seen[p.fach]=p.name;
+   }
+ }
+ for(const p of staff){
+   const ist=S.ass[p.id].length;
+   const target=v82NormalTarget(p);
+   if(p.soll>0&&p.name!=='Belal'&&ist===0)S.warn.push(`${p.name}: 0 Dienste trotz Ziel ${target}.`);
+   if(ist<target&&p.name!=='Belal')S.warn.push(`${p.name}: unter Ziel (${ist}/${target}).`);
+   if(ist>p.soll)S.warn.push(`${p.name}: über Soll (${ist}/${p.soll}) – sollte nicht automatisch passieren.`);
+   if(v82IsGB(p)&&ist>1)S.warn.push(`${p.name}: Reserve-Regel genutzt (${ist}/max. 2), Ziel eigentlich 1.`);
+   const weeks={};
+   S.ass[p.id].forEach(x=>{
+     const k=weekKey(x.day,y,m);
+     if(!weeks[k])weeks[k]={total:0,wd:0,we:0};
+     weeks[k].total++;
+     if(isWeekend(x.day,y,m))weeks[k].we++; else weeks[k].wd++;
+   });
+   Object.entries(weeks).forEach(([wk,w])=>{
+     if(w.total>2)S.warn.push(`${p.name}: ${w.total} Dienste in ${wk}.`);
+     if(w.wd>1)S.warn.push(`${p.name}: mehr als 1 Werktagsdienst in ${wk}.`);
+     if(w.we>1)S.warn.push(`${p.name}: mehr als 1 Wochenenddienst in ${wk}.`);
+   });
+ }
+ S.warn.unshift(`Quota-Round Solver v8.4: ${tries} Versuche, bester Penalty-Wert ${Math.round(bestPen)}. Smart-Wunschlogik aktiv.`);
+ lastPlan=S.plan;lastMeta={...S,month:m,year:y,days,hol};renderPlan();toastMsg('Plan erstellt');
+}
+
+</script>
+</body>
+</html>
